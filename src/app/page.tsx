@@ -1,7 +1,11 @@
+import styles from "./styles.module.css";
+
 export default function Home() {
   return (
-    <div>
-      <h1>Hello World</h1>
+    <div className={styles.container}>
+      <h1 data-text="Hello World" className={styles.glitch}>
+        Hello World
+      </h1>
     </div>
   );
 }
