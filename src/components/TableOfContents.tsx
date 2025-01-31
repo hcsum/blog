@@ -15,9 +15,10 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
 
   // Create a function to decode HTML entities
   const decodeHtmlEntities = (text: string) => {
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = text;
-    return textarea.value;
+    // const textarea = document.createElement("textarea");
+    // textarea.innerHTML = text;
+    // return textarea.value;
+    return text;
   };
 
   return (
