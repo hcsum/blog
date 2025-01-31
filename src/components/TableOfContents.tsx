@@ -13,12 +13,18 @@ interface TableOfContentsProps {
 export default function TableOfContents({ headings }: TableOfContentsProps) {
   if (headings.length === 0) return null;
 
-  // Create a function to decode HTML entities
+  // Decode HTML entities
+  // can't browser api as this is a static nextjs build
+  // might need to use a library later
   const decodeHtmlEntities = (text: string) => {
-    // const textarea = document.createElement("textarea");
-    // textarea.innerHTML = text;
-    // return textarea.value;
-    return text;
+    return text
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#x27;/g, "'")
+      .replace(/&#x2F;/g, "/");
   };
 
   return (
