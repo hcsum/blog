@@ -126,6 +126,296 @@ Right child exists if 2 * index + 2 &lt; heap.length
 1595268630,HotDog
 ...
 </code></pre>
+<h4>Answer</h4>
+<pre><code class="language-typescript">import * as fs from &quot;fs&quot;;
+import path from &quot;path&quot;;
+import * as readline from &quot;readline&quot;;
+
+interface FoodOrder {
+  food: string;
+  count: number;
+}
+
+class MinHeap {
+  private heap: FoodOrder[];
+
+  constructor(private capacity: number) {
+    this.heap = [];
+  }
+
+  insert(order: FoodOrder): void {
+    if (this.heap.length &lt; this.capacity) {
+      this.heap.push(order);
+      this.heapifyUp();
+    } else if (order.count &gt; this.heap[0].count) {
+      this.heap[0] = order;
+      this.heapifyDown();
+    }
+    console.log(&quot;heap&quot;, this.heap);
+  }
+
+  extract(): FoodOrder | undefined {
+    if (this.heap.length === 0) return undefined;
+    const root = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.heap.length &gt; 0) {
+      this.heap[0] = last;
+      this.heapifyDown();
+    }
+    return root;
+  }
+
+  size(): number {
+    return this.heap.length;
+  }
+
+  private heapifyUp(): void {
+    let index = this.heap.length - 1;
+    while (index &gt; 0) {
+      const parentIndex = Math.floor((index - 1) / 2);
+      if (this.heap[parentIndex].count &lt;= this.heap[index].count) break;
+      [this.heap[parentIndex], this.heap[index]] = [
+        this.heap[index],
+        this.heap[parentIndex],
+      ];
+      index = parentIndex;
+    }
+  }
+
+  private heapifyDown(): void {
+    let index = 0;
+    while (index &lt; this.heap.length) {
+      const leftChild = 2 * index + 1;
+      const rightChild = 2 * index + 2;
+      let smallest = index;
+
+      if (
+        leftChild &lt; this.heap.length &amp;&amp;
+        this.heap[leftChild].count &lt; this.heap[smallest].count
+      ) {
+        smallest = leftChild;
+      }
+      if (
+        rightChild &lt; this.heap.length &amp;&amp;
+        this.heap[rightChild].count &lt; this.heap[smallest].count
+      ) {
+        smallest = rightChild;
+      }
+      if (smallest === index) break;
+      [this.heap[index], this.heap[smallest]] = [
+        this.heap[smallest],
+        this.heap[index],
+      ];
+      index = smallest;
+    }
+  }
+}
+
+async function getCommon(filePath: string, k: number): Promise&lt;string[]&gt; {
+  const foodCount: Map&lt;string, number&gt; = new Map();
+  const heap = new MinHeap(k);
+
+  const fileStream = fs.createReadStream(filePath);
+  const rl = readline.createInterface({ input: fileStream });
+
+  // Count occurrences directly
+  for await (const line of rl) {
+    const [, food] = line.split(&quot;,&quot;); // Assuming log format: &quot;timestamp,food&quot;
+    foodCount.set(food, (foodCount.get(food) || 0) + 1);
+  }
+
+  // Maintain top K in the heap
+  for (const [food, count] of foodCount) {
+    heap.insert({ food, count });
+  }
+
+  // Extract top K from the heap
+  const result: string[] = [];
+  while (heap.size() &gt; 0) {
+    result.push(heap.extract()!.food);
+  }
+
+  return result.reverse(); // Reverse to get descending order
+}
+
+// Usage example
+(async () =&gt; {
+  const k = 3;
+  const topK = await getCommon(path.resolve(__dirname, &quot;log.txt&quot;), k);
+  console.log(&quot;Top food orders:&quot;, topK);
+})();
+</code></pre>
 <h3>Part 2: Streaming</h3>
 <p>We now want to analyze food orders in a real-time streaming application. All food orders may not have been received at the time the top <code>k</code> most common ones need to be computed. Given the addition of this requirement, how would you handle processing incoming food orders and computing the top <code>k</code>?</p>
 <p>Your solution should have two functions: <code>ingestOrder(order)</code> and <code>getCommon(k)</code>. Expect the number of function calls to <code>ingestOrder(order)</code> and <code>getCommon(k)</code> to be roughly equal.</p>
+<h4>Answer</h4>
+<pre><code class="language-typescript">type MenuItemType = &quot;CATEGORY&quot; | &quot;DISH&quot; | &quot;OPTION&quot;;
+
+interface MenuItem {
+  id: number;
+  type: MenuItemType;
+  name: string;
+  price?: number;
+  linkedItems: number[];
+}
+
+class Category implements MenuItem {
+  id: number;
+  type: &quot;CATEGORY&quot;;
+  name: string;
+  linkedItems: number[];
+
+  constructor(id: number, name: string, linkedItems: number[]) {
+    this.id = id;
+    this.type = &quot;CATEGORY&quot;;
+    this.name = name;
+    this.linkedItems = linkedItems;
+  }
+}
+
+class Dish implements MenuItem {
+  id: number;
+  type: &quot;DISH&quot;;
+  name: string;
+  price: number;
+  linkedItems: number[];
+
+  constructor(id: number, name: string, price: number, linkedItems: number[]) {
+    this.id = id;
+    this.type = &quot;DISH&quot;;
+    this.name = name;
+    this.price = price;
+    this.linkedItems = linkedItems;
+  }
+}
+
+class OptionItem implements MenuItem {
+  id: number;
+  type: &quot;OPTION&quot;;
+  name: string;
+  price: number;
+  linkedItems: number[];
+
+  constructor(id: number, name: string, price: number) {
+    this.id = id;
+    this.type = &quot;OPTION&quot;;
+    this.name = name;
+    this.price = price;
+    this.linkedItems = [];
+  }
+}
+
+class Menu {
+  items: MenuItem[];
+
+  constructor() {
+    this.items = [];
+  }
+
+  // Method to add a menu item
+  addItem(item: MenuItem) {
+    this.items.push(item);
+  }
+
+  // Method to reconstruct the menu stream from the object
+  reconstructMenuStream(): string {
+    return this.items
+      .map((item) =&gt; {
+        let base = `${item.id}\n${item.type}\n${item.name}`;
+        if (item.type === &quot;DISH&quot; || item.type === &quot;OPTION&quot;) {
+          base += `\n${item.price?.toFixed(2)}`;
+        }
+        if (item.linkedItems.length &gt; 0) {
+          base += `\n${item.linkedItems.join(&quot;\n&quot;)}`;
+        }
+        return base;
+      })
+      .join(&quot;\n\n&quot;);
+  }
+}
+
+function parseMenuStream(menuStream: string): Menu {
+  const lines = menuStream.split(&quot;\n&quot;);
+  const menu = new Menu();
+  let i = 0;
+
+  while (i &lt; lines.length) {
+    const id = parseInt(lines[i]);
+    const type = lines[i + 1] as MenuItemType;
+    const name = lines[i + 2];
+    const linkedItems: number[] = [];
+    let price: number | undefined;
+
+    if (type === &quot;DISH&quot; || type === &quot;OPTION&quot;) {
+      price = parseFloat(lines[i + 3]);
+      i += 4;
+    } else {
+      i += 3;
+    }
+
+    // Collect linked items
+    while (i &lt; lines.length &amp;&amp; lines[i].trim() !== &quot;&quot;) {
+      linkedItems.push(parseInt(lines[i]));
+      i++;
+    }
+
+    let menuItem: MenuItem;
+    if (type === &quot;CATEGORY&quot;) {
+      menuItem = new Category(id, name, linkedItems);
+    } else if (type === &quot;DISH&quot;) {
+      menuItem = new Dish(id, name, price!, linkedItems);
+    } else {
+      menuItem = new OptionItem(id, name, price!);
+    }
+
+    menu.addItem(menuItem);
+
+    // Skip over the blank line between items
+    i++;
+  }
+
+  return menu;
+}
+
+// Example usage:
+
+const menuStream = `
+4
+DISH
+Spaghetti
+10.95
+2
+3
+
+1
+CATEGORY
+Pasta
+4
+5
+
+2
+OPTION
+Meatballs
+1.00
+
+3
+OPTION
+Chicken
+2.00
+
+5
+DISH
+Lasagna
+12.00
+
+6
+DISH
+Caesar Salad
+9.75
+3
+`;
+
+const myMenu = parseMenuStream(menuStream.trim());
+console.log(myMenu.items);
+console.log(myMenu.reconstructMenuStream());
+</code></pre>

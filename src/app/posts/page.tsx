@@ -36,21 +36,67 @@ export default async function PostsPage() {
 
   const links = getLinksRecursively(contentDir);
 
+  // Group links by their first segment
+  const groupedLinks = links.reduce(
+    (acc, link) => {
+      const [firstSegment, ...rest] = link.slug.split("/");
+      if (!acc[firstSegment]) {
+        acc[firstSegment] = [];
+      }
+      acc[firstSegment].push({ ...link, remainingPath: rest.join("/") });
+      return acc;
+    },
+    {} as Record<
+      string,
+      Array<{ slug: string; title: string; remainingPath: string }>
+    >,
+  );
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Posts</h1>
-      <ul className="space-y-2">
-        {links.map((link) => (
-          <li key={link.slug}>
-            <Link
-              href={`/posts/${link.slug}`}
-              className="text-blue-600 hover:underline"
-            >
-              {link.title}
-            </Link>
-          </li>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="text-3xl font-bold mb-8 border-b pb-4">Posts</h1>
+      <div className="space-y-8">
+        {Object.entries(groupedLinks).map(([category, categoryLinks]) => (
+          <div key={category} className="space-y-2">
+            <h2 className="text-xl font-semibold mb-4">
+              {category.replace(/-/g, " ")}
+            </h2>
+            <ul className="space-y-2 ml-4">
+              {categoryLinks.map((link) => (
+                <li
+                  key={link.slug}
+                  className="transition-all duration-200 hover:translate-x-2"
+                >
+                  <Link
+                    href={`/posts/${link.slug}`}
+                    className="text-gray-700 hover:text-blue-600 text-lg font-medium flex items-center group"
+                  >
+                    <span className="mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      →
+                    </span>
+                    {link.remainingPath ? (
+                      <span className="text-gray-500">
+                        {link.remainingPath
+                          .split("/")
+                          .map((segment, index, array) => (
+                            <span key={index}>
+                              {segment.replace(/-/g, " ")}
+                              {index < array.length - 1 && (
+                                <span className="text-gray-400 mx-2">/</span>
+                              )}
+                            </span>
+                          ))}
+                      </span>
+                    ) : (
+                      <span className="text-gray-500">{link.title}</span>
+                    )}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
