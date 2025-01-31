@@ -12,9 +12,9 @@ export async function generateStaticParams() {
   const getFilesRecursively = (
     dir: string,
     relativePath = "",
-  ): { params: { slug: string[] } }[] => {
+  ): { slug: string[] }[] => {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const paths: { params: { slug: string[] } }[] = [];
+    const paths: { slug: string[] }[] = [];
 
     for (const entry of entries) {
       const fullPath = path.join(dir, entry.name);
@@ -28,19 +28,21 @@ export async function generateStaticParams() {
           ...getFilesRecursively(fullPath, path.join(relativePath, entry.name)),
         );
       } else if (entry.isFile() && entry.name.endsWith(".html")) {
-        paths.push({ params: { slug: currentPath.split(path.sep) } });
+        paths.push({ slug: currentPath.split(path.sep) });
       }
     }
 
     return paths;
   };
 
-  return getFilesRecursively(contentDir);
+  const paths = getFilesRecursively(contentDir);
+  return paths;
 }
 
 export async function generateMetadata({
   params,
 }: PostPageProps): Promise<Metadata> {
+  // console.log("params", await params);
   const slug = (await params).slug.join("/");
   return {
     title: `Post: ${slug}`,

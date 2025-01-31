@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import Link from "next/link";
 
-export default function PostsPage() {
+export default async function PostsPage() {
   const contentDir = path.join(process.cwd(), "public/generated-content");
 
   const getLinksRecursively = (

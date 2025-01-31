@@ -1,13 +1,17 @@
 .container {
-  h1 {
-    font-size: 1.8rem;
-    font-weight: 500;
-    max-width: max-content;
-    margin-bottom: 1.5rem;
-    padding: 0.2em;
-    background-color: #fff;
-    color: #000;
-  }
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.container h1,
+.container h2 {
+  font-size: 1.8rem;
+  font-weight: 500;
+  max-width: max-content;
+  margin-bottom: 1.5rem;
+  padding: 0.2em;
+  background-color: var(--foreground);
+  color: var(--background);
 }
 
 @media not (prefers-reduced-motion: reduce) {
@@ -33,13 +37,13 @@
   }
   .glitch {
     --offset-x: 10px;
-    animation: glitch 6s ease-in infinite;
+    animation: glitch 5s ease-in infinite;
     border: 2px solid transparent;
     position: relative;
   }
   .glitch::before,
   .glitch::after {
-    animation: glitch 6s ease-in -0.05s infinite;
+    animation: glitch 5s ease-in -0.05s infinite;
     padding: inherit;
     content: attr(data-text);
     background: inherit;
