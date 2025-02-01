@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./styles.module.css";
-import ThreeScene from "@/components/stuff";
+import ThreeScene from "@/components/Scene";
 
 export default function Home() {
   return (
@@ -8,7 +8,7 @@ export default function Home() {
       <h1 data-text="Hello World" className={styles.glitch}>
         Hello World
       </h1>
-      <Link href="/posts">Posts</Link>
+      <Link href="/posts/index">Posts</Link>
       <ThreeScene />
     </div>
   );

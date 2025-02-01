@@ -1,56 +1,52 @@
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
+import groupBy from "lodash/groupBy";
+
+const getLinksRecursively = (
+  dir: string,
+  relativePath = "",
+): { slug: string; title: string }[] => {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const links: { slug: string; title: string }[] = [];
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    const currentPath = path.join(
+      relativePath,
+      entry.name.replace(/\.html$/, ""),
+    );
+
+    if (entry.isDirectory()) {
+      links.push(
+        ...getLinksRecursively(fullPath, path.join(relativePath, entry.name)),
+      );
+    } else if (entry.isFile() && entry.name.endsWith(".html")) {
+      links.push({
+        slug: currentPath,
+        title: currentPath.replace(/-/g, " ").replace(/\//g, " - "),
+      });
+    }
+  }
+
+  return links;
+};
+
+const groupLinksByFirstSegment = (links: { slug: string; title: string }[]) => {
+  return groupBy(
+    links.map((link) => ({
+      ...link,
+      remainingPath: link.slug.split("/").slice(1).join("/"),
+      firstSegment: link.slug.split("/")[0],
+    })),
+    "firstSegment",
+  );
+};
 
 export default async function PostsPage() {
   const contentDir = path.join(process.cwd(), "public/generated-content");
-
-  const getLinksRecursively = (
-    dir: string,
-    relativePath = "",
-  ): { slug: string; title: string }[] => {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const links: { slug: string; title: string }[] = [];
-
-    for (const entry of entries) {
-      const fullPath = path.join(dir, entry.name);
-      const currentPath = path.join(
-        relativePath,
-        entry.name.replace(/\.html$/, ""),
-      );
-
-      if (entry.isDirectory()) {
-        links.push(
-          ...getLinksRecursively(fullPath, path.join(relativePath, entry.name)),
-        );
-      } else if (entry.isFile() && entry.name.endsWith(".html")) {
-        links.push({
-          slug: currentPath,
-          title: currentPath.replace(/-/g, " ").replace(/\//g, " - "),
-        });
-      }
-    }
-
-    return links;
-  };
-
   const links = getLinksRecursively(contentDir);
-
-  // Group links by their first segment
-  const groupedLinks = links.reduce(
-    (acc, link) => {
-      const [firstSegment, ...rest] = link.slug.split("/");
-      if (!acc[firstSegment]) {
-        acc[firstSegment] = [];
-      }
-      acc[firstSegment].push({ ...link, remainingPath: rest.join("/") });
-      return acc;
-    },
-    {} as Record<
-      string,
-      Array<{ slug: string; title: string; remainingPath: string }>
-    >,
-  );
+  const groupedLinks = groupLinksByFirstSegment(links);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">

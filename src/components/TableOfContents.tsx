@@ -29,7 +29,7 @@ export default function TableOfContents({ headings }: TableOfContentsProps) {
 
   return (
     <div className="mb-8 lg:mb-0">
-      <div className="rounded-xl border border-gray-200 bg-gray-50/50 p-5 shadow-sm backdrop-blur-sm dark:border-gray-700/50 dark:bg-gray-800/50 lg:sticky lg:top-4">
+      <div className="rounded-xl p-5 shadow-sm backdrop-blur-sm lg:sticky lg:top-4">
         <h2 className="mb-3 text-lg font-semibold tracking-tight">
           Table of Contents
         </h2>
