@@ -35,7 +35,7 @@ function addExperienceCard(scene: THREE.Scene) {
 
     const titleMesh = new Text();
     titleMesh.text = exp.title;
-    titleMesh.fontSize = 0.3;
+    titleMesh.fontSize = 0.2;
     titleMesh.color = "white";
     titleMesh.position.set(leftEdge, topEdge, 0.1);
     titleMesh.anchorX = "left";
@@ -125,11 +125,17 @@ function addCube(scene: THREE.Scene, textureLoader: THREE.TextureLoader) {
   return cube;
 }
 
-function addDoughnut(scene: THREE.Scene) {
-  const torus = new THREE.TorusGeometry(4, 0.2, 16, 100);
+function addDoughnut(scene: THREE.Scene, textureLoader: THREE.TextureLoader) {
+  const torus = new THREE.TorusGeometry(3.5, 0.3, 16, 100);
+  const texture = textureLoader.load("/images/bg2.jpg");
+  texture.wrapS = THREE.RepeatWrapping; // 允许纹理在 S 轴上重复
+  texture.wrapT = THREE.RepeatWrapping; // 允
+  texture.repeat.set(2, 2);
   const doughnut = new THREE.Mesh(
     torus,
-    new THREE.MeshStandardMaterial({ color: 0xff6633, wireframe: true }),
+    new THREE.MeshStandardMaterial({
+      map: texture,
+    }),
   );
   doughnut.position.set(1, 0, 0);
   doughnut.rotation.x = Math.PI / 2;
@@ -160,12 +166,12 @@ export default function ThreeScene() {
     const textureLoader = new THREE.TextureLoader();
 
     const cube = addCube(scene, textureLoader);
-    const doughnut = addDoughnut(scene);
+    const doughnut = addDoughnut(scene, textureLoader);
     const cards = addExperienceCard(scene);
     addStars(scene);
 
-    const pointLight = new THREE.PointLight(0xffffff, 4, 100);
-    pointLight.position.set(5, 0, 0);
+    const pointLight = new THREE.PointLight(0xffffff, 100, 0);
+    pointLight.position.set(-5, 0, 2);
     scene.add(pointLight);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
@@ -214,13 +220,11 @@ export default function ThreeScene() {
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
 
-      // Doughnut animation with its own angle
       const oscillationAngle = Math.sin(doughnutAngle * 0.5) * (Math.PI / 4);
       doughnut.rotation.z += 0.1 * delta;
       doughnut.rotation.y = oscillationAngle;
       doughnutAngle = (doughnutAngle + delta) % (Math.PI * 4);
 
-      // Cards animation with separate angle
       cards.forEach((card, index) => {
         const baseAngle = Math.PI / 12;
         const phaseOffset = (index * Math.PI) / 3;
