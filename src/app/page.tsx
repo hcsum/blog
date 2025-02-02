@@ -4,7 +4,7 @@ import ThreeScene from "@/components/Scene";
 
 export default function Home() {
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container} p-2 h-[300vh]`}>
       <h1 data-text="Hello World" className={styles.glitch}>
         Hello World
       </h1>

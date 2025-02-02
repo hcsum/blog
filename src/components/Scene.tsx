@@ -2,67 +2,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-
-const experience = [
-  {
-    title: "Founding Engineer (part-time)",
-    startDate: "Apr 2024",
-    endDate: "present",
-    img: "ai4xm.jpeg",
-    altText: "Logo for AI4XM LTD",
-    externalLink: "https://ai4xm.cn/",
-    details:
-      "Setting up infra and coding everything. If you sees my job application, that means this project didn't go too well 🙂. I am also freelancing and working on my own projects and trying to contribute to opensource.",
-    chips: ["PostgresDB", "NodeJS", "ReactJS", "NextJS"],
-  },
-  {
-    title: "Full-stack Software Engineer",
-    startDate: "Sep 2022",
-    endDate: "Apr 2024",
-    img: "eventx.jpg",
-    altText: "Logo for Eventx",
-    externalLink: "https://eventx.io/",
-    details:
-      "Full-stack development from data model design, backend, to frontend. At Eventx, they expect engineer be the owner of the whole featrue, instead of spliting backend and frontend. I was charged to implemented business critical features like the Email system and Order creation process. I also joined technical and product discussions for new features.",
-    challenge:
-      "It was daunting to work full-stack at first, as I had to propose data model design and discuss with the system architect. But I managed to get good at it.",
-    chips: ["TypeScript", "PostgresDB", "NodeJS", "ReactJS", "TypeORM"],
-  },
-  {
-    title: "Senior Software Engineer",
-    startDate: "Nov 2020",
-    endDate: "Sep 2022",
-    img: "EPAM_logo.png",
-    altText: "Logo for EPAM",
-    externalLink: "https://www.epam.com/",
-    details: "Still working with client Expedia.",
-    chips: ["TypeScript", "NodeJS", "ReactJS", "GraphQL", "ApolloClient"],
-  },
-  {
-    title: "Software Engineer",
-    startDate: "Nov 2019",
-    endDate: "Nov 2020",
-    img: "EPAM_logo.png",
-    altText: "Logo for EPAM",
-    externalLink: "https://www.epam.com/",
-    details:
-      "Consulted for Expedia Group, the US online travel agent company. Worked with their Partner Central team based in Shenzhen. Led and built frontend pages for cancellation policy, reservation deposit policy settings. Worked with SCRUM master on regular basis to estimate project scope. Demo new features to key stakeholders and senior VPs on behalf of the team.",
-    chips: ["TypeScript", "NodeJS", "ReactJS", "GraphQL", "ApolloClient"],
-  },
-  {
-    title: "Software Engineer",
-    startDate: "Nov 2018",
-    endDate: "Nov 2019",
-    img: "fagougou.jpeg",
-    altText: "Logo for fagougou",
-    externalLink: "https://www.fagougou.com",
-    details:
-      "Developed and maintained the frontend of a client facing web app, and an internal web workflow tool. My first pro tech job. Can't imagine how thrilled I was when I got the job.",
-    challenge:
-      "They use Vue and Nuxt, but I didn't know any at the time. The only FE framework I learnt was React. I grinded online tutorials and docs for 2 weeks and made my first commit as a pro.",
-    chips: ["VueJS", "NuxtJS"],
-  },
-];
+import { experience } from "./Experience";
 
 function addStars(scene: THREE.Scene) {
   const starGeometry = new THREE.SphereGeometry(0.05, 4, 4); // Reduced segments further
@@ -115,6 +55,10 @@ function addDoughnut(scene: THREE.Scene) {
 }
 
 function addExperienceCard(scene: THREE.Scene) {
+  const INITIAL_CARD_Y_POSITION = -5; // Starting Y position for the first card
+  const CARD_SPACING = 3; // Vertical space between cards (2 + 1 from original calculation)
+  const CARD_X_OFFSET = 0.5; // How far cards are offset horizontally
+
   const geometry = new THREE.PlaneGeometry(4, 2);
   const material = new THREE.MeshBasicMaterial({
     transparent: true,
@@ -138,9 +82,9 @@ function addExperienceCard(scene: THREE.Scene) {
     cardGroup.add(plane);
     cardGroup.add(border);
 
-    // Calculate position
-    const yOffset = -5 - (2 + 1) * index;
-    const xOffset = index % 2 === 0 ? -0.5 : 0.5;
+    // Calculate position with named constants
+    const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
+    const xOffset = index % 2 === 0 ? -CARD_X_OFFSET : CARD_X_OFFSET;
     cardGroup.position.set(xOffset, yOffset, 0);
 
     // Alternate tilt
@@ -169,7 +113,7 @@ export default function ThreeScene() {
       1000,
     );
 
-    const renderer = new THREE.WebGLRenderer();
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     currentMount.appendChild(renderer.domElement);
 
@@ -197,39 +141,25 @@ export default function ThreeScene() {
     controls.enableDamping = true;
 
     camera.position.z = 5;
-    const initialCameraY = camera.position.y; // 0
+    const initialCameraY = camera.position.y;
 
-    let angle = 0; // Add this to track rotation
+    // Replace handleScroll with this updated version
+    const handleScroll = () => {
+      const scrollPercent = window.scrollY / window.innerHeight;
+      const targetY = initialCameraY - scrollPercent * 10;
 
-    const handleMovement = (event: WheelEvent | KeyboardEvent) => {
-      let delta: number;
+      // Add camera rotation based on scroll
+      const rotationX = scrollPercent * 0.5; // Adjust this multiplier to control tilt sensitivity
+      camera.position.y = targetY;
+      camera.rotation.x = rotationX;
 
-      if (event instanceof WheelEvent) {
-        delta = -event.deltaY * 0.01;
-      } else if (event instanceof KeyboardEvent) {
-        if (!["ArrowUp", "ArrowDown", "PageUp", "PageDown"].includes(event.key))
-          return;
-        if (event.key === "PageUp" || event.key === "PageDown") {
-          delta = event.key === "PageUp" ? 0.5 : -0.5;
-        } else {
-          delta = event.key === "ArrowUp" ? 0.2 : -0.2;
-        }
-      } else {
-        return;
-      }
-
-      const newY = camera.position.y + delta;
-
-      // Only update if we're not going above the initial position
-      if (newY <= initialCameraY) {
-        camera.position.y = newY;
-        controls.target.y += delta;
-        controls.update();
-      }
+      // Update controls target to maintain proper orbiting
+      controls.target.y = targetY;
+      controls.update();
     };
 
-    window.addEventListener("wheel", handleMovement);
-    window.addEventListener("keydown", handleMovement);
+    // Replace event listeners
+    window.addEventListener("scroll", handleScroll);
 
     // Add resize handler
     const handleResize = () => {
@@ -241,10 +171,10 @@ export default function ThreeScene() {
 
     // Use clock for consistent animations
     const clock = new THREE.Clock();
+    let angle = 0;
 
     renderer.setAnimationLoop(() => {
       const delta = clock.getDelta();
-
       // Update animations based on time delta
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
@@ -252,10 +182,13 @@ export default function ThreeScene() {
       doughnut.rotation.x += 0.05 * delta;
       doughnut.rotation.y += 0.025 * delta;
 
-      angle += delta; // More consistent speed
+      // Reset angle when it completes a full circle (2π)
+      angle = (angle + delta) % (Math.PI * 2);
+
       cards.forEach((card, index) => {
         const baseAngle = Math.PI / 12;
-        const oscillation = Math.sin(angle * 2) * 0.1;
+        const phaseOffset = (index * Math.PI) / 3;
+        const oscillation = Math.sin(angle * 2 + phaseOffset) * 0.1;
         card.rotation.y =
           (index % 2 === 0 ? baseAngle : -baseAngle) + oscillation;
       });
@@ -268,8 +201,7 @@ export default function ThreeScene() {
     return () => {
       currentMount.removeChild(renderer.domElement);
       renderer.dispose();
-      window.removeEventListener("wheel", handleMovement);
-      window.removeEventListener("keydown", handleMovement);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
     };
   }, []);
@@ -277,7 +209,7 @@ export default function ThreeScene() {
   return (
     <div
       ref={mountRef}
-      className="w-full min-h-full fixed top-0 left-0 z-[-1]"
+      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[300vh]"
     ></div>
   );
 }
