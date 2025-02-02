@@ -3,6 +3,96 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { experience } from "./Experience";
+import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
+
+import { Text } from "troika-three-text";
+
+function addExperienceCard(scene: THREE.Scene) {
+  const INITIAL_CARD_Y_POSITION = -5;
+  const CARD_SPACING = 3;
+  const CARD_X_OFFSET = 0.5;
+  const CARD_WIDTH = 4;
+  const CARD_HEIGHT = 2;
+  const MARGIN = 0.2; // Margin from edges
+
+  const geometry = new THREE.PlaneGeometry(CARD_WIDTH, CARD_HEIGHT);
+  const material = new THREE.MeshBasicMaterial({
+    transparent: true,
+    opacity: 0.1,
+    side: THREE.DoubleSide,
+    wireframe: false,
+  });
+  const edges = new THREE.EdgesGeometry(geometry);
+  const borderMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+
+  const cardGroups: THREE.Group[] = [];
+
+  experience.forEach((exp, index) => {
+    const plane = new THREE.Mesh(geometry, material);
+
+    // Calculate positions relative to plane dimensions
+    const leftEdge = -CARD_WIDTH / 2 + MARGIN; // Start from left edge + margin
+    const topEdge = CARD_HEIGHT / 2 - MARGIN; // Start from top edge - margin
+    const spacing = 0.3; // Vertical spacing between elements
+
+    const titleMesh = new Text();
+    titleMesh.text = exp.title;
+    titleMesh.fontSize = 0.3;
+    titleMesh.color = "white";
+    titleMesh.position.set(leftEdge, topEdge, 0.1);
+    titleMesh.anchorX = "left";
+    titleMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
+    titleMesh.overflowWrap = "break-word";
+    titleMesh.sync();
+
+    const companyMesh = new Text();
+    companyMesh.text = exp.company;
+    companyMesh.fontSize = 0.2;
+    companyMesh.color = "white";
+    companyMesh.position.set(leftEdge, topEdge - spacing, 0.1);
+    companyMesh.anchorX = "left";
+    companyMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
+    companyMesh.overflowWrap = "break-word";
+    companyMesh.sync();
+
+    const dateMesh = new Text();
+    dateMesh.text = `${exp.startDate} - ${exp.endDate}`;
+    dateMesh.fontSize = 0.15;
+    dateMesh.color = "white";
+    dateMesh.position.set(leftEdge, topEdge - spacing * 2, 0.1);
+    dateMesh.anchorX = "left";
+    dateMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
+    dateMesh.overflowWrap = "break-word";
+    dateMesh.sync();
+
+    // Create border
+    const border = new THREE.LineSegments(edges, borderMaterial);
+
+    // Group the plane, border, and texts
+    const cardGroup = new THREE.Group();
+    cardGroup.add(plane);
+    cardGroup.add(border);
+    cardGroup.add(titleMesh);
+    cardGroup.add(companyMesh);
+    cardGroup.add(dateMesh);
+
+    // Calculate position
+    const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
+    const xOffset = index % 2 === 0 ? -CARD_X_OFFSET : CARD_X_OFFSET;
+    cardGroup.position.set(xOffset, yOffset, 0);
+
+    // Alternate tilt
+    cardGroup.rotation.y = index % 2 === 0 ? Math.PI / 12 : -Math.PI / 12;
+
+    // Store references
+    cardGroups.push(cardGroup);
+
+    // Add to scene
+    scene.add(cardGroup);
+  });
+
+  return cardGroups;
+}
 
 function addStars(scene: THREE.Scene) {
   const starGeometry = new THREE.SphereGeometry(0.05, 4, 4); // Reduced segments further
@@ -54,50 +144,6 @@ function addDoughnut(scene: THREE.Scene) {
   return doughnut;
 }
 
-function addExperienceCard(scene: THREE.Scene) {
-  const INITIAL_CARD_Y_POSITION = -5; // Starting Y position for the first card
-  const CARD_SPACING = 3; // Vertical space between cards (2 + 1 from original calculation)
-  const CARD_X_OFFSET = 0.5; // How far cards are offset horizontally
-
-  const geometry = new THREE.PlaneGeometry(4, 2);
-  const material = new THREE.MeshBasicMaterial({
-    transparent: true,
-    opacity: 0.1,
-    side: THREE.DoubleSide,
-    wireframe: false,
-  });
-  const edges = new THREE.EdgesGeometry(geometry);
-  const borderMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
-
-  const cardGroups: THREE.Group[] = []; // Array to store card groups
-
-  experience.forEach((exp, index) => {
-    const plane = new THREE.Mesh(geometry, material);
-
-    // Create border using EdgesGeometry and LineSegments
-    const border = new THREE.LineSegments(edges, borderMaterial);
-
-    // Group the plane and border together
-    const cardGroup = new THREE.Group();
-    cardGroup.add(plane);
-    cardGroup.add(border);
-
-    // Calculate position with named constants
-    const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
-    const xOffset = index % 2 === 0 ? -CARD_X_OFFSET : CARD_X_OFFSET;
-    cardGroup.position.set(xOffset, yOffset, 0);
-
-    // Alternate tilt
-    cardGroup.rotation.y = index % 2 === 0 ? Math.PI / 12 : -Math.PI / 12;
-
-    // Add card group to our array
-    cardGroups.push(cardGroup);
-    scene.add(cardGroup);
-  });
-
-  return cardGroups; // Return the array of card groups
-}
-
 export default function ThreeScene() {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -116,6 +162,12 @@ export default function ThreeScene() {
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     currentMount.appendChild(renderer.domElement);
+
+    const labelRenderer = new CSS2DRenderer();
+    labelRenderer.setSize(window.innerWidth, window.innerHeight);
+    labelRenderer.domElement.style.position = "absolute";
+    labelRenderer.domElement.style.top = "0px";
+    currentMount.appendChild(labelRenderer.domElement);
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -136,7 +188,7 @@ export default function ThreeScene() {
     // const lightHelper = new THREE.PointLightHelper(pointLight);
     // scene.add(cameraHelper, gridHelper, lightHelper);
 
-    const controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, labelRenderer.domElement);
     controls.enableZoom = false;
     controls.enableDamping = true;
 
@@ -175,31 +227,38 @@ export default function ThreeScene() {
 
     renderer.setAnimationLoop(() => {
       const delta = clock.getDelta();
-      // Update animations based on time delta
+
+      // Rotate the cube
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
 
+      // Rotate the doughnut
       doughnut.rotation.x += 0.05 * delta;
       doughnut.rotation.y += 0.025 * delta;
 
-      // Reset angle when it completes a full circle (2π)
+      // Oscillating animation for the experience cards
       angle = (angle + delta) % (Math.PI * 2);
 
       cards.forEach((card, index) => {
         const baseAngle = Math.PI / 12;
         const phaseOffset = (index * Math.PI) / 3;
         const oscillation = Math.sin(angle * 2 + phaseOffset) * 0.1;
+
+        // Animate the card's slight rotation
         card.rotation.y =
           (index % 2 === 0 ? baseAngle : -baseAngle) + oscillation;
       });
 
+      // Render the scene and update controls
       renderer.render(scene, camera);
+      labelRenderer.render(scene, camera); // Remove this if using troika-three-text or CanvasTexture
       controls.update();
     });
 
     // Update cleanup
     return () => {
       currentMount.removeChild(renderer.domElement);
+      currentMount.removeChild(labelRenderer.domElement);
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
