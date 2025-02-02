@@ -217,7 +217,7 @@ export default function ThreeScene() {
       renderer.setSize(window.innerWidth, window.innerHeight);
     }, 1000);
 
-    window.addEventListener("resize", handleResize);
+    // window.addEventListener("resize", handleResize);
 
     // Use clock for consistent animations
     const clock = new THREE.Clock();

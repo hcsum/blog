@@ -5,7 +5,7 @@ import ThreeScene from "@/components/Scene";
 export default function Home() {
   return (
     <div
-      className={`${styles.container} p-2 h-[500vh] max-w-screen-lg mx-auto`}
+      className={`${styles.container} p-2 h-[500vh] max-w-screen-lg mx-auto relative`}
     >
       <div className="flex justify-between items-center gap-8 mb-8">
         <h1 data-text="Hello World" className={styles.glitch}>
@@ -34,6 +34,9 @@ export default function Home() {
       </p>
 
       <ThreeScene />
+      <div className="absolute bottom-0 left-0 w-full text-center text-lg text-white p-8">
+        Stay in touch: sumtsui@gmail.com
+      </div>
     </div>
   );
 }

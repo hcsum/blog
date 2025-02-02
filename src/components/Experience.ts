@@ -65,7 +65,7 @@ export const experience = [
   },
   {
     title:
-      "Worked in marketing for a consumer tech company. I was quite interested in gadgets at that time. Meanwhile learning to code as a hobby.",
+      "Worked in marketing for a consumer tech company. I was quite interested in consumer electronics at that time. Meanwhile learning to code as a hobby.",
     startDate: "2014",
     endDate: "2017",
     details: "",
