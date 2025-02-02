@@ -29,14 +29,13 @@ function addExperienceCard(scene: THREE.Scene) {
   experience.forEach((exp, index) => {
     const plane = new THREE.Mesh(geometry, material);
 
-    // Calculate positions relative to plane dimensions
     const leftEdge = -CARD_WIDTH / 2 + MARGIN; // Start from left edge + margin
     const topEdge = CARD_HEIGHT / 2 - MARGIN; // Start from top edge - margin
     const spacing = 0.3; // Vertical spacing between elements
 
     const titleMesh = new Text();
     titleMesh.text = exp.title;
-    titleMesh.fontSize = 0.2;
+    titleMesh.fontSize = 0.3;
     titleMesh.color = "white";
     titleMesh.position.set(leftEdge, topEdge, 0.1);
     titleMesh.anchorX = "left";
@@ -65,10 +64,8 @@ function addExperienceCard(scene: THREE.Scene) {
     dateMesh.overflowWrap = "break-word";
     dateMesh.sync();
 
-    // Create border
     const border = new THREE.LineSegments(edges, borderMaterial);
 
-    // Group the plane, border, and texts
     const cardGroup = new THREE.Group();
     cardGroup.add(plane);
     cardGroup.add(border);
@@ -76,7 +73,6 @@ function addExperienceCard(scene: THREE.Scene) {
     cardGroup.add(companyMesh);
     cardGroup.add(dateMesh);
 
-    // Calculate position
     const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
     const xOffset = index % 2 === 0 ? -CARD_X_OFFSET : CARD_X_OFFSET;
     cardGroup.position.set(xOffset, yOffset, 0);
@@ -84,10 +80,8 @@ function addExperienceCard(scene: THREE.Scene) {
     // Alternate tilt
     cardGroup.rotation.y = index % 2 === 0 ? Math.PI / 12 : -Math.PI / 12;
 
-    // Store references
     cardGroups.push(cardGroup);
 
-    // Add to scene
     scene.add(cardGroup);
   });
 
@@ -135,10 +129,10 @@ function addDoughnut(scene: THREE.Scene) {
   const torus = new THREE.TorusGeometry(4, 0.2, 16, 100);
   const doughnut = new THREE.Mesh(
     torus,
-    new THREE.MeshStandardMaterial({ color: 0xff6633 }),
+    new THREE.MeshStandardMaterial({ color: 0xff6633, wireframe: true }),
   );
   doughnut.position.set(1, 0, 0);
-  doughnut.rotation.x = Math.PI / 4;
+  doughnut.rotation.x = Math.PI / 2;
   doughnut.rotation.z = Math.PI / 6;
   scene.add(doughnut);
   return doughnut;
@@ -167,7 +161,7 @@ export default function ThreeScene() {
 
     const cube = addCube(scene, textureLoader);
     const doughnut = addDoughnut(scene);
-    const cards = addExperienceCard(scene); // Store reference to cards
+    const cards = addExperienceCard(scene);
     addStars(scene);
 
     const pointLight = new THREE.PointLight(0xffffff, 4, 100);
@@ -184,13 +178,12 @@ export default function ThreeScene() {
     camera.position.z = 5;
     const initialCameraY = camera.position.y;
 
-    // Replace handleScroll with this updated version
     const handleScroll = () => {
       const scrollPercent = window.scrollY / window.innerHeight;
       const targetY = initialCameraY - scrollPercent * 10;
 
       // Add camera rotation based on scroll
-      const rotationX = scrollPercent * 0.5; // Adjust this multiplier to control tilt sensitivity
+      const rotationX = scrollPercent * 0.5; // control tilt sensitivity
       camera.position.y = targetY;
       camera.rotation.x = rotationX;
 
@@ -212,39 +205,37 @@ export default function ThreeScene() {
 
     // Use clock for consistent animations
     const clock = new THREE.Clock();
-    let angle = 0;
+    let cardAngle = 0;
+    let doughnutAngle = 0;
 
     renderer.setAnimationLoop(() => {
       const delta = clock.getDelta();
 
-      // Rotate the cube
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
 
-      // Rotate the doughnut
-      doughnut.rotation.x += 0.05 * delta;
-      doughnut.rotation.y += 0.025 * delta;
+      // Doughnut animation with its own angle
+      const oscillationAngle = Math.sin(doughnutAngle * 0.5) * (Math.PI / 4);
+      doughnut.rotation.z += 0.1 * delta;
+      doughnut.rotation.y = oscillationAngle;
+      doughnutAngle = (doughnutAngle + delta) % (Math.PI * 4);
 
-      // Oscillating animation for the experience cards
-      angle = (angle + delta) % (Math.PI * 2);
-
+      // Cards animation with separate angle
       cards.forEach((card, index) => {
         const baseAngle = Math.PI / 12;
         const phaseOffset = (index * Math.PI) / 3;
-        const oscillation = Math.sin(angle * 2 + phaseOffset) * 0.1;
+        const oscillation = Math.sin(cardAngle * 2 + phaseOffset) * 0.05;
 
-        // Animate the card's slight rotation
         card.rotation.y =
           (index % 2 === 0 ? baseAngle : -baseAngle) + oscillation;
       });
+      cardAngle = (cardAngle + delta) % (Math.PI * 2);
 
       // Render the scene and update controls
       renderer.render(scene, camera);
-      // labelRenderer.render(scene, camera); // Remove this if using troika-three-text or CanvasTexture
       controls.update();
     });
 
-    // Update cleanup
     return () => {
       currentMount.removeChild(renderer.domElement);
       renderer.dispose();
