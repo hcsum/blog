@@ -35,13 +35,13 @@
   }
   .glitch {
     --offset-x: 10px;
-    animation: glitch 5s ease-in infinite;
+    animation: glitch 6s ease-in infinite;
     border: 2px solid transparent;
     position: relative;
   }
   .glitch::before,
   .glitch::after {
-    animation: glitch 5s ease-in -0.05s infinite;
+    animation: glitch 6s ease-in -0.05s infinite;
     padding: inherit;
     content: attr(data-text);
     background: inherit;

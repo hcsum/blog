@@ -9,8 +9,8 @@ import { Text } from "troika-three-text";
 
 function addExperienceCard(scene: THREE.Scene) {
   const INITIAL_CARD_Y_POSITION = -5;
-  const CARD_SPACING = 3;
-  const CARD_X_OFFSET = 0.5;
+  const CARD_SPACING = 4;
+  const CARD_X_OFFSET = window.innerWidth < 768 ? -0.1 : 0.5; // magic number -0.1 temp fix for mobile
   const CARD_WIDTH = 4;
   const CARD_HEIGHT = 2;
   const MARGIN = 0.2; // Margin from edges
@@ -44,16 +44,6 @@ function addExperienceCard(scene: THREE.Scene) {
     titleMesh.overflowWrap = "break-word";
     titleMesh.sync();
 
-    // const companyMesh = new Text();
-    // companyMesh.text = exp.company;
-    // companyMesh.fontSize = 0.2;
-    // companyMesh.color = "white";
-    // companyMesh.position.set(leftEdge, topEdge - spacing, 0.1);
-    // companyMesh.anchorX = "left";
-    // companyMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
-    // companyMesh.overflowWrap = "break-word";
-    // companyMesh.sync();
-
     const dateMesh = new Text();
     dateMesh.text = `${exp.startDate} - ${exp.endDate}`;
     dateMesh.fontSize = 0.15;
@@ -70,7 +60,6 @@ function addExperienceCard(scene: THREE.Scene) {
     cardGroup.add(plane);
     cardGroup.add(border);
     cardGroup.add(titleMesh);
-    // cardGroup.add(companyMesh);
     cardGroup.add(dateMesh);
 
     const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
@@ -89,7 +78,7 @@ function addExperienceCard(scene: THREE.Scene) {
 }
 
 function addStars(scene: THREE.Scene) {
-  const starGeometry = new THREE.SphereGeometry(0.05, 4, 4); // Reduced segments further
+  const starGeometry = new THREE.SphereGeometry(0.05, 4, 4);
   const starMaterial = new THREE.MeshStandardMaterial({
     color: 0xffffff,
     emissive: 0xffffff,
@@ -125,23 +114,23 @@ function addCube(scene: THREE.Scene, textureLoader: THREE.TextureLoader) {
   return cube;
 }
 
-function addDoughnut(scene: THREE.Scene, textureLoader: THREE.TextureLoader) {
+function addRing(scene: THREE.Scene, textureLoader: THREE.TextureLoader) {
   const torus = new THREE.TorusGeometry(3.5, 0.3, 16, 100);
   const texture = textureLoader.load("/images/bg2.jpg");
   texture.wrapS = THREE.RepeatWrapping; // 允许纹理在 S 轴上重复
   texture.wrapT = THREE.RepeatWrapping; // 允
   texture.repeat.set(2, 2);
-  const doughnut = new THREE.Mesh(
+  const ring = new THREE.Mesh(
     torus,
     new THREE.MeshStandardMaterial({
       map: texture,
     }),
   );
-  doughnut.position.set(1, 0, 0);
-  doughnut.rotation.x = Math.PI / 2;
-  doughnut.rotation.z = Math.PI / 6;
-  scene.add(doughnut);
-  return doughnut;
+  ring.position.set(0.5, -1, 0);
+  ring.rotation.x = Math.PI / 2;
+  ring.rotation.z = Math.PI / 6;
+  scene.add(ring);
+  return ring;
 }
 
 export default function ThreeScene() {
@@ -166,7 +155,7 @@ export default function ThreeScene() {
     const textureLoader = new THREE.TextureLoader();
 
     const cube = addCube(scene, textureLoader);
-    const doughnut = addDoughnut(scene, textureLoader);
+    const ring = addRing(scene, textureLoader);
     const cards = addExperienceCard(scene);
     addStars(scene);
 
@@ -189,19 +178,39 @@ export default function ThreeScene() {
       const targetY = initialCameraY - scrollPercent * 10;
 
       // Add camera rotation based on scroll
-      const rotationX = scrollPercent * 0.5; // control tilt sensitivity
+      const rotationX = scrollPercent * 0.5;
       camera.position.y = targetY;
       camera.rotation.x = rotationX;
+
+      cards.forEach((card, index) => {
+        const cardScrollOffset = scrollPercent - index * 0.1; // Staggered effects
+        const flipAngle = Math.PI * cardScrollOffset;
+
+        // Rotate cards (reduced rotation)
+        card.rotation.y = flipAngle * 0.5;
+
+        // Add some tilt on X-axis (reduced tilt)
+        card.rotation.x = cardScrollOffset * 0.2;
+
+        // Scale effect - smaller scale range
+        const scale = 1 + Math.sin(cardScrollOffset * Math.PI) * 0.02;
+        card.scale.set(scale, scale, scale);
+
+        // const cardY = card.position.y;
+        // const cameraY = camera.position.y;
+        // const distance = Math.abs(cardY - cameraY);
+
+        const zOffset = Math.sin(flipAngle) * 0.5;
+        card.position.z += (zOffset - card.position.z) * 0.1;
+      });
 
       // Update controls target to maintain proper orbiting
       controls.target.y = targetY;
       controls.update();
     };
 
-    // Replace event listeners
     window.addEventListener("scroll", handleScroll);
 
-    // Debounce the resize handler with lodash
     const handleResize = debounce(() => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
@@ -213,7 +222,7 @@ export default function ThreeScene() {
     // Use clock for consistent animations
     const clock = new THREE.Clock();
     let cardAngle = 0;
-    let doughnutAngle = 0;
+    let ringAngle = 0;
 
     renderer.setAnimationLoop(() => {
       const delta = clock.getDelta();
@@ -221,10 +230,10 @@ export default function ThreeScene() {
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
 
-      const oscillationAngle = Math.sin(doughnutAngle * 0.5) * (Math.PI / 4);
-      doughnut.rotation.z += 0.1 * delta;
-      doughnut.rotation.y = oscillationAngle;
-      doughnutAngle = (doughnutAngle + delta) % (Math.PI * 4);
+      const oscillationAngle = Math.sin(ringAngle * 0.5) * (Math.PI / 4);
+      ring.rotation.z += 0.1 * delta;
+      ring.rotation.y = oscillationAngle;
+      ringAngle = (ringAngle + delta) % (Math.PI * 4);
 
       cards.forEach((card, index) => {
         const baseAngle = Math.PI / 12;
@@ -246,7 +255,6 @@ export default function ThreeScene() {
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      // Clean up the debounced function
       handleResize.cancel();
     };
   }, []);
@@ -254,7 +262,7 @@ export default function ThreeScene() {
   return (
     <div
       ref={mountRef}
-      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[400vh] overflow-auto"
+      className="w-full h-full fixed top-0 left-0 z-[-1] overflow-auto"
     ></div>
   );
 }
