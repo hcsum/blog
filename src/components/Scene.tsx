@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { experience } from "./Experience";
+import { debounce } from "lodash";
 
 import { Text } from "troika-three-text";
 
@@ -31,7 +32,6 @@ function addExperienceCard(scene: THREE.Scene) {
 
     const leftEdge = -CARD_WIDTH / 2 + MARGIN; // Start from left edge + margin
     const topEdge = CARD_HEIGHT / 2 - MARGIN; // Start from top edge - margin
-    const spacing = 0.3; // Vertical spacing between elements
 
     const titleMesh = new Text();
     titleMesh.text = exp.title;
@@ -40,25 +40,25 @@ function addExperienceCard(scene: THREE.Scene) {
     titleMesh.position.set(leftEdge, topEdge, 0.1);
     titleMesh.anchorX = "left";
     titleMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
-    titleMesh.lineHeight = 1;
+    titleMesh.lineHeight = 1.1;
     titleMesh.overflowWrap = "break-word";
     titleMesh.sync();
 
-    const companyMesh = new Text();
-    companyMesh.text = exp.company;
-    companyMesh.fontSize = 0.2;
-    companyMesh.color = "white";
-    companyMesh.position.set(leftEdge, topEdge - spacing, 0.1);
-    companyMesh.anchorX = "left";
-    companyMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
-    companyMesh.overflowWrap = "break-word";
-    companyMesh.sync();
+    // const companyMesh = new Text();
+    // companyMesh.text = exp.company;
+    // companyMesh.fontSize = 0.2;
+    // companyMesh.color = "white";
+    // companyMesh.position.set(leftEdge, topEdge - spacing, 0.1);
+    // companyMesh.anchorX = "left";
+    // companyMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
+    // companyMesh.overflowWrap = "break-word";
+    // companyMesh.sync();
 
     const dateMesh = new Text();
     dateMesh.text = `${exp.startDate} - ${exp.endDate}`;
     dateMesh.fontSize = 0.15;
     dateMesh.color = "white";
-    dateMesh.position.set(leftEdge, topEdge - spacing * 2, 0.1);
+    dateMesh.position.set(leftEdge, -CARD_HEIGHT / 2 + MARGIN, 0.1);
     dateMesh.anchorX = "left";
     dateMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
     dateMesh.overflowWrap = "break-word";
@@ -70,7 +70,7 @@ function addExperienceCard(scene: THREE.Scene) {
     cardGroup.add(plane);
     cardGroup.add(border);
     cardGroup.add(titleMesh);
-    cardGroup.add(companyMesh);
+    // cardGroup.add(companyMesh);
     cardGroup.add(dateMesh);
 
     const yOffset = INITIAL_CARD_Y_POSITION - CARD_SPACING * index;
@@ -201,12 +201,13 @@ export default function ThreeScene() {
     // Replace event listeners
     window.addEventListener("scroll", handleScroll);
 
-    // Add resize handler
-    const handleResize = () => {
+    // Debounce the resize handler with lodash
+    const handleResize = debounce(() => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    };
+    }, 1000);
+
     window.addEventListener("resize", handleResize);
 
     // Use clock for consistent animations
@@ -245,13 +246,15 @@ export default function ThreeScene() {
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
+      // Clean up the debounced function
+      handleResize.cancel();
     };
   }, []);
 
   return (
     <div
       ref={mountRef}
-      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[300vh] overflow-auto"
+      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[400vh] overflow-auto"
     ></div>
   );
 }

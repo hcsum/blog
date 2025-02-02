@@ -1,18 +1,19 @@
 export const experience = [
   {
-    title: "Founding Engineer (part-time)",
+    title:
+      "Founding Engineer at AI4XM LTD. Set up infra and coded full-stack. If you sees my job application, that means this project didn't go too well 😅",
     startDate: "Apr 2024",
     endDate: "present",
     company: "AI4XM LTD",
     img: "ai4xm.jpeg",
     altText: "Logo for AI4XM LTD",
     externalLink: "https://ai4xm.cn/",
-    details:
-      "Setting up infra and coding everything. If you sees my job application, that means this project didn't go too well 🙂. I am also freelancing and working on my own projects and trying to contribute to opensource.",
+    details: "",
     chips: ["PostgresDB", "NodeJS", "ReactJS", "NextJS"],
   },
   {
-    title: "Full-stack Software Engineer",
+    title:
+      "Full-stack Software Engineer at Eventx.io, a Hong Kong SASS company. Tech stack: TypeScript, PostgresDB, NodeJS, ReactJS, TypeORM.",
     startDate: "Sep 2022",
     endDate: "Apr 2024",
     company: "Eventx",
@@ -26,7 +27,8 @@ export const experience = [
     chips: ["TypeScript", "PostgresDB", "NodeJS", "ReactJS", "TypeORM"],
   },
   {
-    title: "Senior Software Engineer",
+    title:
+      "Senior Software Engineer at EPAM, a US publicly traded company. I worked onsite with client Expedia Group",
     startDate: "Nov 2020",
     endDate: "Sep 2022",
     company: "EPAM",
@@ -37,7 +39,8 @@ export const experience = [
     chips: ["TypeScript", "NodeJS", "ReactJS", "GraphQL", "ApolloClient"],
   },
   {
-    title: "Software Engineer",
+    title:
+      "Software Engineer at EPAM. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
     startDate: "Nov 2019",
     endDate: "Nov 2020",
     company: "EPAM",
@@ -46,20 +49,32 @@ export const experience = [
     externalLink: "https://www.epam.com/",
     details:
       "Consulted for Expedia Group, the US online travel agent company. Worked with their Partner Central team based in Shenzhen. Led and built frontend pages for cancellation policy, reservation deposit policy settings. Worked with SCRUM master on regular basis to estimate project scope. Demo new features to key stakeholders and senior VPs on behalf of the team.",
-    chips: ["TypeScript", "NodeJS", "ReactJS", "GraphQL", "ApolloClient"],
   },
   {
-    title: "Software Engineer",
-    startDate: "Nov 2018",
-    endDate: "Nov 2019",
-    company: "Fagougou",
-    img: "fagougou.jpeg",
-    altText: "Logo for fagougou",
-    externalLink: "https://www.fagougou.com",
-    details:
-      "Developed and maintained the frontend of a client facing web app, and an internal web workflow tool. My first pro tech job. Can't imagine how thrilled I was when I got the job.",
-    challenge:
-      "They use Vue and Nuxt, but I didn't know any at the time. The only FE framework I learnt was React. I grinded online tutorials and docs for 2 weeks and made my first commit as a pro.",
-    chips: ["VueJS", "NuxtJS"],
+    title:
+      "Got hired by a local startup as a frontend engineer. Tech stack: VueJS, NuxtJS.",
+    startDate: "2018",
+    endDate: "2019",
+    details: "",
+  },
+  {
+    title: "Decided to pursue programming as a career by learning full-time!",
+    startDate: "2017",
+    endDate: "2018",
+    details: "",
+  },
+  {
+    title:
+      "Worked in marketing for a consumer tech company. I was quite interested in gadgets at that time. Meanwhile learning to code as a hobby.",
+    startDate: "2014",
+    endDate: "2017",
+    details: "",
+  },
+  {
+    title:
+      "Graduated with a college degree, but not much learned. I guess traditional education and me failed each other.",
+    startDate: "2008",
+    endDate: "2012",
+    details: "",
   },
 ];
