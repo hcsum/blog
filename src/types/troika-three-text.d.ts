@@ -10,6 +10,7 @@ declare module "troika-three-text" {
     textAlign: string;
     maxWidth: number;
     overflowWrap: string;
+    lineHeight: number;
     sync(): void;
   }
 }

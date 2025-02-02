@@ -3,7 +3,6 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { experience } from "./Experience";
-import { CSS2DRenderer } from "three/examples/jsm/renderers/CSS2DRenderer.js";
 
 import { Text } from "troika-three-text";
 
@@ -37,11 +36,12 @@ function addExperienceCard(scene: THREE.Scene) {
 
     const titleMesh = new Text();
     titleMesh.text = exp.title;
-    titleMesh.fontSize = 0.3;
+    titleMesh.fontSize = 0.2;
     titleMesh.color = "white";
     titleMesh.position.set(leftEdge, topEdge, 0.1);
     titleMesh.anchorX = "left";
     titleMesh.maxWidth = CARD_WIDTH - MARGIN * 2;
+    titleMesh.lineHeight = 1;
     titleMesh.overflowWrap = "break-word";
     titleMesh.sync();
 
@@ -163,12 +163,6 @@ export default function ThreeScene() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     currentMount.appendChild(renderer.domElement);
 
-    const labelRenderer = new CSS2DRenderer();
-    labelRenderer.setSize(window.innerWidth, window.innerHeight);
-    labelRenderer.domElement.style.position = "absolute";
-    labelRenderer.domElement.style.top = "0px";
-    currentMount.appendChild(labelRenderer.domElement);
-
     const textureLoader = new THREE.TextureLoader();
 
     const cube = addCube(scene, textureLoader);
@@ -183,12 +177,7 @@ export default function ThreeScene() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
-    // const cameraHelper = new THREE.CameraHelper(pointLight.shadow.camera);
-    // const gridHelper = new THREE.GridHelper(200, 50);
-    // const lightHelper = new THREE.PointLightHelper(pointLight);
-    // scene.add(cameraHelper, gridHelper, lightHelper);
-
-    const controls = new OrbitControls(camera, labelRenderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableZoom = false;
     controls.enableDamping = true;
 
@@ -251,14 +240,13 @@ export default function ThreeScene() {
 
       // Render the scene and update controls
       renderer.render(scene, camera);
-      labelRenderer.render(scene, camera); // Remove this if using troika-three-text or CanvasTexture
+      // labelRenderer.render(scene, camera); // Remove this if using troika-three-text or CanvasTexture
       controls.update();
     });
 
     // Update cleanup
     return () => {
       currentMount.removeChild(renderer.domElement);
-      currentMount.removeChild(labelRenderer.domElement);
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
@@ -268,7 +256,7 @@ export default function ThreeScene() {
   return (
     <div
       ref={mountRef}
-      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[300vh]"
+      className="w-full min-h-full fixed top-0 left-0 z-[-1] h-[300vh] overflow-auto"
     ></div>
   );
 }
