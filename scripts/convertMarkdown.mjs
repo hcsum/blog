@@ -10,7 +10,10 @@ async function processDirectory(dir, relativePath = "") {
 
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    const outputRelativePath = path.join(relativePath, entry.name.replace(/\.md$/, ".html"));
+    const outputRelativePath = path.join(
+      relativePath,
+      entry.name.replace(/\.md$/, ".html"),
+    );
 
     if (entry.isDirectory()) {
       // keep going down the directory
@@ -29,11 +32,55 @@ async function processDirectory(dir, relativePath = "") {
   }
 }
 
+async function cleanupOutputDirectory(
+  contentDir,
+  outputDir,
+  relativePath = "",
+) {
+  const outputEntries = await fs.readdir(path.join(outputDir, relativePath), {
+    withFileTypes: true,
+  });
+
+  for (const entry of outputEntries) {
+    const outputFullPath = path.join(outputDir, relativePath, entry.name);
+    const contentFullPath = path.join(
+      contentDir,
+      relativePath,
+      entry.isDirectory() ? entry.name : entry.name.replace(/\.html$/, ".md"),
+    );
+
+    if (entry.isDirectory()) {
+      // Recursively check subdirectories
+      await cleanupOutputDirectory(
+        contentDir,
+        outputDir,
+        path.join(relativePath, entry.name),
+      );
+
+      // Remove directory if empty
+      const remainingFiles = await fs.readdir(outputFullPath);
+      if (remainingFiles.length === 0) {
+        await fs.remove(outputFullPath);
+        console.log(`Removed empty directory: ${outputFullPath}`);
+      }
+    } else if (entry.isFile()) {
+      // Remove HTML file if corresponding MD file doesn't exist
+      if (!(await fs.pathExists(contentFullPath))) {
+        await fs.remove(outputFullPath);
+        console.log(`Removed orphaned file: ${outputFullPath}`);
+      }
+    }
+  }
+}
+
 (async () => {
   try {
     await fs.ensureDir(OUTPUT_DIR);
     await processDirectory(CONTENT_DIR);
-    console.log("All markdown files have been processed.");
+    await cleanupOutputDirectory(CONTENT_DIR, OUTPUT_DIR);
+    console.log(
+      "All markdown files have been processed and cleanup completed.",
+    );
   } catch (err) {
     console.error("Error processing markdown files:", err);
   }
