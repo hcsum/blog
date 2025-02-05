@@ -1,0 +1,58 @@
+<h1>Problem</h1>
+<ul>
+<li>Write a function that takes in an array of flight objects, a fare limit, and a flight origin,</li>
+<li>return an array of flight destinations that with the fare not higher than the fare limit.</li>
+<li>Combined flights are allowed.</li>
+</ul>
+<pre><code class="language-typescript">type Flight = {
+  origin: string;
+  destination: string;
+  fare: number;
+};
+
+const flights: Flight[] = [
+  { origin: &quot;KKB&quot;, destination: &quot;ABC&quot;, fare: 98 },
+  { origin: &quot;ABC&quot;, destination: &quot;OKK&quot;, fare: 200 },
+  { origin: &quot;OKK&quot;, destination: &quot;MLB&quot;, fare: 156 },
+  { origin: &quot;KKB&quot;, destination: &quot;PRS&quot;, fare: 400 },
+  { origin: &quot;LPO&quot;, destination: &quot;OKK&quot;, fare: 56 },
+  { origin: &quot;PRS&quot;, destination: &quot;BIO&quot;, fare: 90 },
+  { origin: &quot;KKB&quot;, destination: &quot;PPP&quot;, fare: 78 },
+  { origin: &quot;BIO&quot;, destination: &quot;OKK&quot;, fare: 66.7 },
+  { origin: &quot;OKK&quot;, destination: &quot;PPP&quot;, fare: 300.5 },
+];
+
+function findFlights(
+  flights: Flight[],
+  limit: number,
+  origin: string,
+): Array&lt;Array&lt;string&gt;&gt; {
+  const result: Array&lt;Array&lt;string&gt;&gt; = [];
+  const prices: number[] = [];
+
+  function buildRoute(origin: string, route: string[], routeTotal: number) {
+    for (const f of flights) {
+      if (origin === f.origin) {
+        if (routeTotal + f.fare &lt; limit) {
+          buildRoute(
+            f.destination,
+            [...route, f.destination],
+            routeTotal + f.fare,
+          );
+        }
+      }
+    }
+
+    result.push(route);
+    prices.push(routeTotal);
+  }
+
+  buildRoute(origin, [], 0);
+
+  console.log(result);
+  console.log(prices);
+  return result;
+}
+
+findFlights(flights, 500, &quot;KKB&quot;);
+</code></pre>

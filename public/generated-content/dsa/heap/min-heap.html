@@ -16,6 +16,7 @@
 <li>Right child: <code>2 * parent + 2</code></li>
 <li>Parent: <code>Math.floor((index - 1) / 2)</code></li>
 </ul>
+<p>The reason given either the left child index or right child index can find parent is due to the property of integer division and rounding down. the 0.5 extra produced by the right child index is rounded down to 0.</p>
 <h2>Implementation</h2>
 <pre><code class="language-typescript">class MinHeap {
   private heap: number[];
@@ -49,12 +50,16 @@
   extract(): number | undefined {
     if (this.heap.length === 0) return undefined;
     const root = this.heap[0];
-    const last = this.heap.pop()!;
-    if (this.heap.length &gt; 0) {
+    const last = this.heap.pop();
+    if (this.heap.length &gt; 0 &amp;&amp; last !== undefined) {
       this.heap[0] = last;
       this.heapifyDown();
     }
     return root;
+  }
+
+  front(): number | undefined {
+    return this.heap.length &gt; 0 ? this.heap[0] : undefined;
   }
 
   size(): number {
@@ -100,13 +105,6 @@
       ];
       index = smallest;
     }
-  }
-
-  front() {
-    if (this.heap.length === 0) {
-      throw new Error(&quot;Heap is empty&quot;);
-    }
-    return this.heap[0];
   }
 }
 </code></pre>
