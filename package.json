@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build:markdown": "node scripts/convertMarkdown.mjs",
-    "build": "npm run build:markdown && next build",
+    "markdown": "node scripts/convertMarkdown.mjs",
+    "build": "npm run markdown && next build",
     "start": "next start",
     "lint": "next lint"
   },

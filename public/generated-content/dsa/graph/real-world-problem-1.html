@@ -10,6 +10,37 @@
   fare: number;
 };
 
+function findFlights(
+  flights: Flight[],
+  limit: number,
+  origin: string,
+): string[] {
+  const results: Set&lt;string&gt; = new Set();
+
+  function search(
+    currentOrigin: string,
+    currentFare: number,
+    visited: Set&lt;string&gt;,
+  ) {
+    for (const flight of flights) {
+      if (flight.origin === currentOrigin) {
+        const newFare = currentFare + flight.fare;
+
+        if (newFare &lt;= limit &amp;&amp; !visited.has(flight.destination)) {
+          results.add(flight.destination);
+          const newVisited = new Set(visited);
+          newVisited.add(flight.destination);
+          search(flight.destination, newFare, newVisited);
+        }
+      }
+    }
+  }
+
+  search(origin, 0, new Set());
+  return Array.from(results);
+}
+
+// Example usage:
 const flights: Flight[] = [
   { origin: &quot;KKB&quot;, destination: &quot;ABC&quot;, fare: 98 },
   { origin: &quot;ABC&quot;, destination: &quot;OKK&quot;, fare: 200 },
@@ -22,37 +53,5 @@ const flights: Flight[] = [
   { origin: &quot;OKK&quot;, destination: &quot;PPP&quot;, fare: 300.5 },
 ];
 
-function findFlights(
-  flights: Flight[],
-  limit: number,
-  origin: string,
-): Array&lt;Array&lt;string&gt;&gt; {
-  const result: Array&lt;Array&lt;string&gt;&gt; = [];
-  const prices: number[] = [];
-
-  function buildRoute(origin: string, route: string[], routeTotal: number) {
-    for (const f of flights) {
-      if (origin === f.origin) {
-        if (routeTotal + f.fare &lt; limit) {
-          buildRoute(
-            f.destination,
-            [...route, f.destination],
-            routeTotal + f.fare,
-          );
-        }
-      }
-    }
-
-    result.push(route);
-    prices.push(routeTotal);
-  }
-
-  buildRoute(origin, [], 0);
-
-  console.log(result);
-  console.log(prices);
-  return result;
-}
-
-findFlights(flights, 500, &quot;KKB&quot;);
+console.log(findFlights(flights, 500, &quot;KKB&quot;));
 </code></pre>
