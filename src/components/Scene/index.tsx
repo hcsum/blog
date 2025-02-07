@@ -53,43 +53,10 @@ export default function ThreeScene() {
     controls.enableDamping = true;
     // controls.dampingFactor = 0.25;
 
-    const initialRingY = ring.position.y;
-    const initialCameraY = camera.position.y;
-    // Define the scroll threshold where camera should focus on astronaut
-    const focusThreshold = 0.4;
-
+    let scrollPosY = 0;
     const handleScroll = () => {
       // const scrollPosY = (window.scrollY / window.innerHeight) * 0.3;
-      const scrollPosY = window.scrollY / document.body.clientHeight;
-      ring.position.y = initialRingY + scrollPosY * 10;
-
-      if (astronaut) {
-        astronaut.rotation.y = initialAstronautY - Math.PI * scrollPosY;
-
-        if (scrollPosY > focusThreshold) {
-          // Only update camera Y position up to the focus threshold
-          const targetY = initialCameraY - focusThreshold * 10;
-          camera.position.y = targetY;
-
-          // Create an offset target position slightly above and behind the astronaut
-          const targetPosition = astronaut.position.clone();
-          targetPosition.y -= 1;
-          targetPosition.z -= 2;
-          targetPosition.x -= 1;
-
-          // Smoothly update controls target to focus on offset position
-          const lerpFactor = 0.1;
-          controls.target.lerp(targetPosition, lerpFactor);
-        } else {
-          // Normal camera movement before threshold
-          const targetY = initialCameraY - scrollPosY * 10; // why?
-          camera.position.y = targetY;
-
-          // Smoothly reset controls target to origin
-          const lerpFactor = 0.1;
-          controls.target.lerp(new THREE.Vector3(0, 0, 0), lerpFactor);
-        }
-      }
+      scrollPosY = window.scrollY / document.body.clientHeight;
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -104,6 +71,9 @@ export default function ThreeScene() {
 
     let ringAngle = 0;
     const delta = 0.01;
+    const initialRingY = ring.position.y;
+    const initialCameraY = camera.position.y;
+    const focusThreshold = 0.55;
 
     const animate = () => {
       cube.rotation.x += 0.5 * delta;
@@ -112,10 +82,19 @@ export default function ThreeScene() {
       const oscillationAngle = Math.sin(ringAngle * 0.5) * (Math.PI / 4);
       ring.rotation.z += 0.2 * delta;
       ring.rotation.y = oscillationAngle;
+      ring.position.y = initialRingY + scrollPosY * 10;
       ringAngle = (ringAngle + delta) % (Math.PI * 4);
 
+      if (astronaut) {
+        astronaut.rotation.y = initialAstronautY - Math.PI * scrollPosY;
+      }
+      if (scrollPosY > focusThreshold) {
+        camera.position.y = initialCameraY - focusThreshold * 10;
+      } else {
+        camera.position.y = initialCameraY - scrollPosY * 10;
+      }
+
       renderer.render(scene, camera);
-      controls.update();
 
       requestAnimationFrame(animate);
     };
