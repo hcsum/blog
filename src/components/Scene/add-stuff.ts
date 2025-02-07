@@ -152,7 +152,7 @@ export function addAstronaut(
       obj.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           const mesh = new THREE.Mesh(child.geometry, material);
-          mesh.scale.set(0.5, 0.5, 0.5); // Adjust scale as needed
+          mesh.scale.set(0.5, 0.5, 0.5);
           scene.add(mesh);
           resolve(mesh);
         }

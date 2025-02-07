@@ -2,7 +2,6 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { debounce } from "lodash";
 import { addRing, addStars, addAstronaut } from "./add-stuff";
 
 export default function ThreeScene() {
@@ -36,7 +35,7 @@ export default function ThreeScene() {
     let initialAstronautY = 0;
     const setupAstronaut = async () => {
       const mesh = await addAstronaut(scene, textureLoader);
-      mesh.position.set(1, -5, 3);
+      mesh.position.set(1, -6.5, 3);
       mesh.rotation.y = Math.PI / 2;
       astronaut = mesh;
       initialAstronautY = astronaut.rotation.y;
@@ -51,47 +50,62 @@ export default function ThreeScene() {
     scene.add(ambientLight);
 
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableZoom = false;
     controls.enableDamping = true;
+    // controls.dampingFactor = 0.25;
 
     const initialRingY = ring.position.y;
     const initialCameraY = camera.position.y;
+    // Define the scroll threshold where camera should focus on astronaut
+    const focusThreshold = 0.4;
 
     const handleScroll = () => {
-      const scrollPosY = (window.scrollY / window.innerHeight) * 0.3;
-      // const scrollPosY = window.scrollY / document.body.clientHeight;
+      // const scrollPosY = (window.scrollY / window.innerHeight) * 0.3;
+      const scrollPosY = window.scrollY / document.body.clientHeight;
       ring.position.y = initialRingY + scrollPosY * 10;
 
       if (astronaut) {
         astronaut.rotation.y = initialAstronautY - Math.PI * scrollPosY;
+
+        if (scrollPosY > focusThreshold) {
+          // Only update camera Y position up to the focus threshold
+          const targetY = initialCameraY - focusThreshold * 10;
+          camera.position.y = targetY;
+
+          // Create an offset target position slightly above and behind the astronaut
+          const targetPosition = astronaut.position.clone();
+          targetPosition.y -= 1;
+          targetPosition.z -= 2;
+          targetPosition.x -= 1;
+
+          // Smoothly update controls target to focus on offset position
+          const lerpFactor = 0.1;
+          controls.target.lerp(targetPosition, lerpFactor);
+        } else {
+          // Normal camera movement before threshold
+          const targetY = initialCameraY - scrollPosY * 10; // why?
+          camera.position.y = targetY;
+
+          // Smoothly reset controls target to origin
+          const lerpFactor = 0.1;
+          controls.target.lerp(new THREE.Vector3(0, 0, 0), lerpFactor);
+        }
       }
-
-      // Add camera rotation based on scroll
-      const targetY = initialCameraY - scrollPosY * 10;
-      camera.position.y = targetY;
-
-      // Update controls target to maintain proper orbiting
-      // controls.target.y = targetY;
-      // controls.update();
     };
 
     window.addEventListener("scroll", handleScroll);
 
-    const handleResize = debounce(() => {
+    const handleResize = () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    }, 1000);
+    };
 
     window.addEventListener("resize", handleResize);
 
-    // Use clock for consistent animations
-    const clock = new THREE.Clock();
     let ringAngle = 0;
+    const delta = 0.01;
 
-    renderer.setAnimationLoop(() => {
-      const delta = clock.getDelta();
-
+    const animate = () => {
       cube.rotation.x += 0.5 * delta;
       cube.rotation.y += 0.5 * delta;
 
@@ -100,27 +114,19 @@ export default function ThreeScene() {
       ring.rotation.y = oscillationAngle;
       ringAngle = (ringAngle + delta) % (Math.PI * 4);
 
-      // card waving effect
-      // cards.forEach((card, index) => {
-      //   const baseAngle = Math.PI / 12;
-      //   const phaseOffset = (index * Math.PI) / 3;
-      //   const oscillation = Math.sin(cardAngle * 2 + phaseOffset) * 0.05;
-
-      //   card.rotation.y =
-      //     (index % 2 === 0 ? baseAngle : -baseAngle) + oscillation;
-      // });
-      // cardAngle = (cardAngle + delta) % (Math.PI * 2);
-
       renderer.render(scene, camera);
       controls.update();
-    });
+
+      requestAnimationFrame(animate);
+    };
+
+    animate();
 
     return () => {
       currentMount.removeChild(renderer.domElement);
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
-      handleResize.cancel();
     };
   }, []);
 
