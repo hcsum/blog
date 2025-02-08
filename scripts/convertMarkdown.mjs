@@ -16,27 +16,15 @@ async function processDirectory(dir, relativePath = "") {
     );
 
     if (entry.isDirectory()) {
-      // keep going down the directory
       await processDirectory(fullPath, path.join(relativePath, entry.name));
     } else if (entry.isFile() && path.extname(entry.name) === ".md") {
       const markdownContent = await fs.readFile(fullPath, "utf-8");
-      const stats = await fs.stat(fullPath);
-      const lastModified = stats.mtime;
-      // const formattedDate = lastModified.toISOString();
 
-      // Convert markdown to HTML
       const htmlContent = marked.parse(markdownContent);
 
-      // Wrap the HTML content with metadata
-      const finalHtmlContent = `
-    <div class="last-modified">Last updated: ${lastModified.toLocaleDateString()}</div>
-    ${htmlContent}
-`;
-
-      // Write the HTML file to the output directory
       const outputPath = path.join(OUTPUT_DIR, outputRelativePath);
       await fs.ensureDir(path.dirname(outputPath));
-      await fs.writeFile(outputPath, finalHtmlContent, "utf-8");
+      await fs.writeFile(outputPath, htmlContent, "utf-8");
 
       console.log(`Generated: ${outputPath}`);
     }
