@@ -1,4 +1,4 @@
-import { experience } from "../Experience";
+import { experiences } from "../Experiences";
 import * as THREE from "three";
 import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
 import { Text } from "troika-three-text";
@@ -23,7 +23,7 @@ export function addExperienceCards(scene: THREE.Scene) {
 
   const cardGroups: THREE.Group[] = [];
 
-  experience.forEach((exp, index) => {
+  experiences.forEach((exp, index) => {
     const plane = new THREE.Mesh(geometry, material);
 
     const leftEdge = -CARD_WIDTH / 2 + MARGIN; // Start from left edge + margin

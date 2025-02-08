@@ -30,7 +30,7 @@ export default function ThreeScene() {
     let initialAstronautY = 0;
     const setupAstronaut = async () => {
       const mesh = await addAstronaut(scene, textureLoader);
-      mesh.position.set(0.5, -7, 3);
+      mesh.position.set(0.5, -6, 3);
       mesh.rotation.y = Math.PI / 2;
       astronaut = mesh;
       initialAstronautY = astronaut.rotation.y;
@@ -69,7 +69,7 @@ export default function ThreeScene() {
     const initialRingY = ring.position.y;
     console.log(initialRingY);
     const initialCameraY = camera.position.y;
-    const focusThreshold = 0.6;
+    const focusThreshold = 0.5;
 
     const animate = () => {
       cube.rotation.x += 0.5 * delta;

@@ -1,4 +1,4 @@
-export const experience = [
+export const experiences = [
   {
     title:
       "Founding Engineer at AI4XM LTD. Set up infra and coded full-stack. If you sees my job application, that means this project didn't go too well 😅",
@@ -28,7 +28,7 @@ export const experience = [
   },
   {
     title:
-      "Senior Software Engineer at EPAM, a US publicly traded company. I worked onsite with client Expedia Group",
+      "Senior Software Engineer at EPAM, a US publicly traded company consulting for Fortune 1000. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
     startDate: "Nov 2020",
     endDate: "Sep 2022",
     company: "EPAM",
@@ -40,7 +40,7 @@ export const experience = [
   },
   {
     title:
-      "Software Engineer at EPAM. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
+      "Software Engineer at EPAM, a US publicly traded company consulting for Fortune 1000. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
     startDate: "Nov 2019",
     endDate: "Nov 2020",
     company: "EPAM",
@@ -72,7 +72,7 @@ export const experience = [
   },
   {
     title:
-      "Graduated with a college degree, but not much learned. I guess traditional education and me failed each other.",
+      "Graduated with a college degree, but didn't figure out what I want to do. I guess traditional education and me failed each other.",
     startDate: "2008",
     endDate: "2012",
     details: "",
