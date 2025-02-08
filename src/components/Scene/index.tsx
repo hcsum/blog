@@ -1,16 +1,11 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { addRing, addStars, addAstronaut } from "./add-stuff";
 
 export default function ThreeScene() {
-  const mountRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
-    const currentMount = mountRef.current;
-    if (!currentMount) return;
-
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -22,9 +17,9 @@ export default function ThreeScene() {
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
+      canvas: document.querySelector("#bg") as HTMLCanvasElement,
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    currentMount.appendChild(renderer.domElement);
 
     const textureLoader = new THREE.TextureLoader();
 
@@ -108,7 +103,6 @@ export default function ThreeScene() {
     animate();
 
     return () => {
-      currentMount.removeChild(renderer.domElement);
       renderer.dispose();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleResize);
@@ -116,9 +110,9 @@ export default function ThreeScene() {
   }, []);
 
   return (
-    <div
-      ref={mountRef}
+    <canvas
+      id="bg"
       className="w-full h-full fixed top-0 left-0 z-[-1]"
-    ></div>
+    ></canvas>
   );
 }
