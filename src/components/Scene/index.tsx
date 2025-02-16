@@ -80,9 +80,9 @@ export default function ThreeScene() {
       ring.rotation.y = oscillationAngle;
       ring.position.y = initialRingY + scrollPosY * 5;
       ring.scale.set(
-        1 - scrollPosY * 0.8,
-        1 - scrollPosY * 0.8,
-        1 - scrollPosY * 0.8,
+        1 - scrollPosY * 1.5,
+        1 - scrollPosY * 1.5,
+        1 - scrollPosY * 1.5,
       );
       ringAngle = (ringAngle + delta) % (Math.PI * 4);
 
