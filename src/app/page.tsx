@@ -59,10 +59,11 @@ export default function Home() {
         Projects
       </h2>
       <div className="bg-white text-black p-4">
-        <h3>
+        <h3 className="mb-2">
           <a
             href="https://declutterspace.net"
             className="decoration-solid font-bold"
+            target="_blank"
           >
             declutterspace.net
           </a>
@@ -71,11 +72,12 @@ export default function Home() {
           I’ve always yearned for a minimalist lifestyle. I don’t want my home
           to be a storage space; instead, I want all my belongings to serve a
           purpose. I guess I have a bit of a compulsive tendency when it comes
-          to my stuff. So, I created this app to help with decluttering and
-          organizing items. It takes a deadline-based approach to getting rid of
-          things. I use LLM for photo recognition, allowing users to quickly
-          upload items in bulk for easier management. Also, it&apos;s a good
-          exercise to try out the new and shiny Next.js 15 features.
+          to my stuff. So, I created this app to help people like me with
+          decluttering and organizing items. It takes a deadline-based approach
+          to getting rid of things. I use LLM for photo recognition, allowing
+          users to quickly upload items in bulk for easier management. Also,
+          it&apos;s a good exercise to try out the new and shiny Next.js 15
+          features.
         </p>
       </div>
 
