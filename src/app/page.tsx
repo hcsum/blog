@@ -42,19 +42,17 @@ export default function Home() {
       {experiences.map((experience) => (
         <div
           key={experience.startDate}
-          className="mb-8 p-6 rounded-lg bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 transition-colors"
+          className="mb-8 p-6 rounded-lg bg-black/5 hover:bg-black/10 transition-colors"
         >
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            <h3 className="text-xl font-semibold text-gray-300">
               {experience.company}
             </h3>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
+            <span className="text-sm text-gray-300">
               {experience.startDate} - {experience.endDate || "Present"}
             </span>
           </div>
-          <p className="text-lg text-gray-700 dark:text-gray-300 mb-3">
-            {experience.title}
-          </p>
+          <p className="text-lg text-white mb-3">{experience.title}</p>
         </div>
       ))}
       <ThreeScene />

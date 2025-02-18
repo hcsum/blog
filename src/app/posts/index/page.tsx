@@ -131,12 +131,14 @@ export default async function PostsPage() {
   const groupedLinks = groupLinksByFirstSegment(links);
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-8 border-b pb-4">Posts</h1>
+    <div className="mx-auto px-4 py-8 max-w-4xl bg-white dark:bg-black">
+      <h1 className="text-3xl font-bold mb-8 border-b pb-4 text-gray-900 dark:text-gray-100">
+        Posts
+      </h1>
       <div className="space-y-8">
         {Object.entries(groupedLinks).map(([category, categoryLinks]) => (
           <div key={category} className="space-y-2">
-            <h2 className="text-xl font-semibold mb-4">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
               {category.replace(/-/g, " ")}
             </h2>
             <RenderFolder structure={organizeLinks(categoryLinks)} />

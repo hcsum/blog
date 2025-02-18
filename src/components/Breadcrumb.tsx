@@ -13,7 +13,7 @@ export default function Breadcrumb() {
   console.log(segments);
 
   return (
-    <nav className="text-sm text-gray-500 m-4 max-w-screen-lg mx-auto">
+    <nav className="text-sm text-gray-500 m-4">
       {links.map((link) => (
         <Link
           href={link.path}
