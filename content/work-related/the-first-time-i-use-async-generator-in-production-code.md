@@ -9,3 +9,5 @@ We use SendGrid as our email service provider, and the events are collected via 
 I need to build a system that can process these events in real-time, store the data in our database, and provide a dashboard for the client to view the statistics. And doing this without creating too much load on the database.
 
 We decided to save each batch of the SendGrid email events in S3 bucket as a JSON file. Then we process the events in a separate service.
+
+btc...
