@@ -5,6 +5,16 @@ import { marked } from "marked";
 const CONTENT_DIR = path.join(process.cwd(), "content");
 const OUTPUT_DIR = path.join(process.cwd(), "public/generated-content");
 
+marked.use({
+  renderer: {
+    code: function (code) {
+      if (code.lang == "mermaid")
+        return `<pre class="mermaid">${code.text}</pre>`;
+      return `<pre>${code.text}</pre>`;
+    },
+  },
+});
+
 async function processDirectory(dir, relativePath = "") {
   const entries = await fs.readdir(dir, { withFileTypes: true });
 

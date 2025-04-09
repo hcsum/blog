@@ -12,6 +12,8 @@
   "dependencies": {
     "@tailwindcss/typography": "^0.5.16",
     "fs-extra": "^11.3.0",
+    "gsap": "^3.12.7",
+    "lil-gui": "^0.20.0",
     "lodash": "^4.17.21",
     "marked": "^15.0.6",
     "next": "15.1.4",
