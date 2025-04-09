@@ -37,7 +37,7 @@ export default function Scene() {
       console.log("onError", stuff);
     };
     const textureLoader = new THREE.TextureLoader(loadingManager);
-    const colorTexture = textureLoader.load("/textures/checkerboard-8x8.png");
+    const colorTexture = textureLoader.load("/textures/door/color.jpg");
     const alphaTexture = textureLoader.load("/textures/door/alpha.jpg");
     const heightTexture = textureLoader.load("/textures/door/height.jpg");
     const normalTexture = textureLoader.load("/textures/door/normal.jpg");
@@ -46,6 +46,8 @@ export default function Scene() {
     const ambientOcclusionTexture = textureLoader.load(
       "/textures/door/ambientOcclusion.jpg",
     );
+
+    colorTexture.colorSpace = THREE.SRGBColorSpace;
 
     // colorTexture.repeat.set(2, 2);
     // colorTexture.wrapS = THREE.RepeatWrapping;
