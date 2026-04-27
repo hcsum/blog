@@ -57,7 +57,7 @@ export default function Home() {
           </div>
         ))}
       </section>
-      <section className="mt-[1000px] mb-64">
+      {/* <section className="mt-[1000px] mb-64">
         <h2
           data-text="Projects"
           className={`mb-6 mt-[1000px] ${styles.glitch}`}
@@ -86,7 +86,7 @@ export default function Home() {
             shiny Next.js 15 features.
           </p>
         </div>
-      </section>
+      </section> */}
       <div className="absolute bottom-0 left-0 w-full text-center text-lg text-white p-8">
         Stay in touch: sumtsui@gmail.com
       </div>

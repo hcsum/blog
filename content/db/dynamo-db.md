@@ -2,7 +2,7 @@
 
 It is a key-value store like an object.
 
-## Primary Index
+## Primary key
 
 It is a unique identifier for a item in a table. It is the "key" of the item.
 
@@ -41,7 +41,7 @@ Sort Key: `timestamp`
 
 It is just like the primary key. It is used to query items by other attributes.
 
-With each secondary key, DynamoDB will create an internal table.
+With each secondary index, DynamoDB will create an internal table.
 
 e.g.
 
@@ -73,7 +73,7 @@ Sort Key: `action`
 
 Now we can query all the `purchase` actions of user `123`.
 
-Notice the partition key of this secondary key is the same as the primary key. This is called a Local Secondary Key (LSI).
+Notice the partition key of this secondary key is the same as the primary key. This is called a Local Secondary Index (LSI).
 
 We can also create a Global Secondary Key (GSI).
 
@@ -92,3 +92,29 @@ LSI, it shared the same partition key with the primary key.
 GSI, it has a different partition key.
 
 When querying with Secondary Index, we must provide the partition key.
+
+Use GSIs as default. LSI only when strong consistency is required.
+
+## Read Consistency
+
+### Strongly Consistent Reads
+
+How it works: When you read data, the response might not reflect the results of a recently completed write operation (due to replication lag across regions or availability zones).
+
+Consistency lag: Reads might return stale data for a very short period.
+
+Performance & cost: Faster and cheaper, uses half the read throughput compared to strongly consistent reads.
+
+Use case: Best for applications that can tolerate slightly outdated data—for example, dashboards, analytics, or social feeds.
+
+### Eventual Consistent Reads
+
+How it works: Returns the most up-to-date data, reflecting all writes that were acknowledged prior to the read.
+
+Consistency: Guaranteed to return the latest committed value.
+
+Performance & cost: Slightly slower and uses more read capacity (twice as much per read compared to eventually consistent).
+
+Use case: Required when you must guarantee up-to-date data, like in financial transactions, real-time bidding, or inventory systems where accuracy is critical.
+
+### Global Tables
