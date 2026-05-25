@@ -1,0 +1,34 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+---
+
+{
+  headings.length > 0 && (
+    <aside class="glass-panel rounded-[1.5rem] p-5 lg:sticky lg:top-24">
+      <p class="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--accent)]">
+        On this page
+      </p>
+      <nav>
+        <ul class="space-y-2 text-sm text-[color:var(--muted)]">
+          {headings.map((heading) => (
+            <li style={`margin-left: ${(heading.depth - 2) * 0.85}rem`}>
+              <a class="transition hover:text-[color:var(--accent)]" href={`#${heading.slug}`}>
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </aside>
+  )
+}

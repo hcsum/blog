@@ -1,0 +1,38 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import { groupPostsBySection } from "@/lib/blog";
+
+const posts = await getCollection("blog", ({ data }) => !data.draft);
+const groupedPosts = groupPostsBySection(posts);
+---
+
+<BaseLayout title="Posts | Haochen Xu" description="Essays, dev notes, data structures, and experiments.">
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <div class="mb-12 max-w-3xl">
+      <p class="eyebrow mb-3">Archive</p>
+      <h1 class="text-5xl font-semibold tracking-tight">Writing organized by topic, not by CMS ceremony.</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">
+        The archive keeps the folder-based structure from the original repo, but now gets a proper content layer,
+        metadata handling, and static generation pipeline.
+      </p>
+    </div>
+
+    <div class="space-y-12">
+      {Object.entries(groupedPosts).map(([section, entries]) => (
+        <section>
+          <div class="mb-5 flex items-center gap-4">
+            <h2 class="text-2xl font-semibold tracking-tight">{section}</h2>
+            <span class="rounded-full border border-[color:var(--line)] px-3 py-1 text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
+              {entries.length} posts
+            </span>
+          </div>
+          <div class="grid gap-6 lg:grid-cols-2">
+            {entries.map((entry) => <PostCard entry={entry} />)}
+          </div>
+        </section>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

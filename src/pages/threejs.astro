@@ -1,0 +1,23 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ThreePlayground from "@/components/ThreePlayground";
+---
+
+<BaseLayout
+  title="Three.js Playground | Haochen Xu"
+  description="A small React-powered Three.js playground living inside the Astro site."
+>
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <div class="mb-10 max-w-3xl">
+      <p class="eyebrow mb-3">Experiment</p>
+      <h1 class="text-5xl font-semibold tracking-tight">Three.js stays in the stack.</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">
+        The site is now content-first, but React islands are still here whenever the work needs custom rendering,
+        animation, or browser-only toys.
+      </p>
+    </div>
+    <div class="glass-panel overflow-hidden rounded-[2rem] p-4">
+      <ThreePlayground client:only="react" />
+    </div>
+  </section>
+</BaseLayout>

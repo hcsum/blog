@@ -1,0 +1,46 @@
+---
+import { getCollection, render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TableOfContents from "@/components/TableOfContents.astro";
+import { formatDate, getPostMeta } from "@/lib/blog";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const meta = getPostMeta(post);
+const { Content, headings } = await render(post);
+---
+
+<BaseLayout title={`${meta.title} | Haochen Xu`} description={meta.description}>
+  <article class="mx-auto max-w-6xl px-5 py-14">
+    <a class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--accent)]" href="/posts/">
+      <span aria-hidden="true">←</span>
+      Back to posts
+    </a>
+
+    <header class="mb-12 max-w-3xl">
+      <div class="mb-5 flex flex-wrap items-center gap-3 text-sm text-[color:var(--muted)]">
+        <span class="rounded-full border border-[color:var(--line)] px-3 py-1">{meta.section}</span>
+        {meta.publishedAt && <time datetime={meta.publishedAt.toISOString()}>{formatDate(meta.publishedAt)}</time>}
+        <span>{meta.readingTime} min read</span>
+      </div>
+      <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">{meta.title}</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">{meta.description}</p>
+    </header>
+
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      <div class="glass-panel rounded-[2rem] p-6 md:p-10">
+        <div class="prose prose-lg">
+          <Content />
+        </div>
+      </div>
+      <TableOfContents headings={headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)} />
+    </div>
+  </article>
+</BaseLayout>

@@ -3,8 +3,7 @@ import typography from "@tailwindcss/typography";
 
 export default {
   content: [
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{astro,html,js,jsx,md,mdx,ts,tsx}",
   ],
   darkMode: "class",
   theme: {

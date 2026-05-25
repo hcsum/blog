@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f7f3ea;
+  --foreground: #111827;
+  --surface: rgba(255, 255, 255, 0.7);
+  --surface-strong: rgba(255, 255, 255, 0.9);
+  --line: rgba(17, 24, 39, 0.12);
+  --accent: #0f766e;
+  --accent-strong: #115e59;
+  --muted: #5b6472;
+  --shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+}
+
+:root.dark {
+  --background: #07111f;
+  --foreground: #f8fafc;
+  --surface: rgba(10, 19, 34, 0.72);
+  --surface-strong: rgba(10, 19, 34, 0.9);
+  --line: rgba(148, 163, 184, 0.2);
+  --accent: #5eead4;
+  --accent-strong: #99f6e4;
+  --muted: #cbd5e1;
+  --shadow: 0 30px 80px rgba(2, 6, 23, 0.4);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.12), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 50%),
+    var(--background);
+  color: var(--foreground);
+  font-family:
+    "IBM Plex Sans",
+    "Avenir Next",
+    "Segoe UI",
+    sans-serif;
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
+
+.site-shell {
+  position: relative;
+  min-height: 100vh;
+}
+
+.glass-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+  --tw-prose-lead: var(--muted);
+  --tw-prose-links: var(--accent-strong);
+  --tw-prose-bold: var(--foreground);
+  --tw-prose-counters: var(--muted);
+  --tw-prose-bullets: var(--accent);
+  --tw-prose-hr: var(--line);
+  --tw-prose-quotes: var(--foreground);
+  --tw-prose-quote-borders: var(--accent);
+  --tw-prose-captions: var(--muted);
+  --tw-prose-code: var(--foreground);
+  --tw-prose-pre-code: #f8fafc;
+  --tw-prose-pre-bg: #0f172a;
+  --tw-prose-th-borders: var(--line);
+  --tw-prose-td-borders: var(--line);
+  max-width: none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3 {
+  scroll-margin-top: 6rem;
+}
+
+.prose pre {
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 1rem;
+}
+
+.prose code::before,
+.prose code::after {
+  content: "";
+}
+
+.hero-grid {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
