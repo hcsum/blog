@@ -3,7 +3,7 @@ import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 
-const site = process.env.SITE_URL ?? "https://example.com";
+const site = process.env.SITE_URL ?? "https://hcxu.cc";
 
 export default defineConfig({
   site,
