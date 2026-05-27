@@ -2,6 +2,7 @@
 
 import type { CSSProperties } from "react";
 import {
+  normalizeStatus,
   getToneMeta,
   useAgentStatusFeed,
 } from "@/lib/agent-status";
@@ -9,7 +10,9 @@ import {
 export default function AgentHeaderIndicator() {
   const feed = useAgentStatusFeed();
   const tone = getToneMeta(feed.derived.statusTone);
-  const label = feed.current.data ? feed.derived.activityLabel : "Agent unavailable";
+  const label = feed.current.data
+    ? getHeaderLabel(feed.derived.status)
+    : "AGENT UNAVAILABLE";
   const summary = feed.current.data?.summary ?? "Public status feed";
 
   return (
@@ -40,4 +43,28 @@ export default function AgentHeaderIndicator() {
       </span>
     </a>
   );
+}
+
+function getHeaderLabel(status: string) {
+  switch (normalizeStatus(status)) {
+    case "idle":
+      return "AGENT IDLE";
+    case "researching":
+      return "AGENT RESEARCHING";
+    case "drafting":
+    case "running":
+    case "queued":
+    case "received":
+    case "completed":
+    case "delivered":
+      return "AGENT RESPONDING";
+    case "knowledge":
+      return "AGENT LEARNING";
+    case "deployment":
+      return "AGENT UPDATING";
+    case "failed":
+      return "AGENT DEGRADED";
+    default:
+      return "AGENT ACTIVE";
+  }
 }

@@ -2,10 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import type { AgentStatusTone } from "@/lib/agent-status";
-import { getToneMeta, normalizeStatus } from "@/lib/agent-status";
+import {
+  getStatusChipLabel,
+  getToneMeta,
+  normalizeStatus,
+  type AgentStatusTone,
+} from "@/lib/agent-status";
 
 type AgentCoreVisualProps = {
+  title?: string;
+  summary?: string;
   status: string;
   tone: AgentStatusTone;
   isStale: boolean;
@@ -32,7 +38,13 @@ const toneFallbacks: Record<AgentStatusTone, string> = {
   unavailable: "#94a3b8",
 };
 
-export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisualProps) {
+export default function AgentCoreVisual({
+  title,
+  summary,
+  status,
+  tone,
+  isStale,
+}: AgentCoreVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const statusRef = useRef(normalizeStatus(status));
   const visualStateRef = useRef<VisualState>({
@@ -56,7 +68,9 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     const container = canvas.parentElement;
     if (!container) return;
 
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
@@ -68,7 +82,9 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
       canvas,
     });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2),
+    );
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     const keyLight = new THREE.PointLight(0xffffff, 16, 0, 2);
@@ -79,7 +95,11 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
 
     const coreGeometry = new THREE.IcosahedronGeometry(1.45, isMobile ? 2 : 3);
     const shellGeometry = new THREE.IcosahedronGeometry(2.05, isMobile ? 1 : 2);
-    const innerCoreGeometry = new THREE.SphereGeometry(0.78, isMobile ? 18 : 26, isMobile ? 18 : 26);
+    const innerCoreGeometry = new THREE.SphereGeometry(
+      0.78,
+      isMobile ? 18 : 26,
+      isMobile ? 18 : 26,
+    );
     const ringGeometry = new THREE.TorusGeometry(2.5, 0.035, 16, 120);
     const ringGeometrySecondary = new THREE.TorusGeometry(1.9, 0.025, 16, 96);
 
@@ -119,7 +139,10 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     const shell = new THREE.Mesh(shellGeometry, shellMaterial);
     const ringPrimary = new THREE.Mesh(ringGeometry, ringMaterial);
     ringPrimary.rotation.x = Math.PI / 2.7;
-    const ringSecondary = new THREE.Mesh(ringGeometrySecondary, ringMaterialSecondary);
+    const ringSecondary = new THREE.Mesh(
+      ringGeometrySecondary,
+      ringMaterialSecondary,
+    );
     ringSecondary.rotation.set(Math.PI / 1.8, 0.4, 0.2);
 
     const root = new THREE.Group();
@@ -138,7 +161,10 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     }
 
     const particleGeometry = new THREE.BufferGeometry();
-    particleGeometry.setAttribute("position", new THREE.BufferAttribute(particlePositions, 3));
+    particleGeometry.setAttribute(
+      "position",
+      new THREE.BufferAttribute(particlePositions, 3),
+    );
     const particleMaterial = new THREE.PointsMaterial({
       color: new THREE.Color("#d9f99d"),
       size: isMobile ? 0.048 : 0.04,
@@ -150,10 +176,16 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     scene.add(particles);
 
     const position = coreGeometry.attributes.position;
-    const basePositions = Float32Array.from(position.array as ArrayLike<number>);
+    const basePositions = Float32Array.from(
+      position.array as ArrayLike<number>,
+    );
     const baseNormals = Float32Array.from(position.array as ArrayLike<number>);
     for (let i = 0; i < baseNormals.length; i += 3) {
-      const vector = new THREE.Vector3(baseNormals[i], baseNormals[i + 1], baseNormals[i + 2]).normalize();
+      const vector = new THREE.Vector3(
+        baseNormals[i],
+        baseNormals[i + 1],
+        baseNormals[i + 2],
+      ).normalize();
       baseNormals[i] = vector.x;
       baseNormals[i + 1] = vector.y;
       baseNormals[i + 2] = vector.z;
@@ -162,7 +194,7 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     const size = { width: 0, height: 0 };
     const resize = () => {
       size.width = container.clientWidth;
-      size.height = Math.max(Math.min(container.clientWidth * 0.92, 560), isMobile ? 320 : 420);
+      size.height = container.clientHeight || size.width;
       camera.aspect = size.width / size.height;
       camera.updateProjectionMatrix();
       renderer.setSize(size.width, size.height, false);
@@ -178,17 +210,34 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
     const animate = () => {
       const state = visualStateRef.current;
       const elapsed = clock.getElapsedTime();
-      const pulse = reducedMotion ? 0.25 : Math.sin(elapsed * state.pulseSpeed) * 0.5 + 0.5;
-      const flash = statusRef.current === "deployment" ? Math.sin(elapsed * 4.2) * 0.5 + 0.5 : 0;
-      const fracture = statusRef.current === "failed" ? Math.sin(elapsed * 2.8) * 0.5 + 0.5 : 0;
+      const pulse = reducedMotion
+        ? 0.25
+        : Math.sin(elapsed * state.pulseSpeed) * 0.5 + 0.5;
+      const flash =
+        statusRef.current === "deployment"
+          ? Math.sin(elapsed * 4.2) * 0.5 + 0.5
+          : 0;
+      const fracture =
+        statusRef.current === "failed"
+          ? Math.sin(elapsed * 2.8) * 0.5 + 0.5
+          : 0;
       const wobble = reducedMotion ? state.wobble * 0.35 : state.wobble;
       const positions = position.array as Float32Array;
 
       for (let i = 0; i < positions.length; i += 3) {
         const vertexIndex = i / 3;
         const wave =
-          Math.sin(elapsed * state.pulseSpeed + vertexIndex * 0.16 + baseNormals[i] * 2.4) * wobble +
-          Math.cos(elapsed * (state.pulseSpeed * 0.55) + baseNormals[i + 1] * 3.6) * wobble * 0.55;
+          Math.sin(
+            elapsed * state.pulseSpeed +
+              vertexIndex * 0.16 +
+              baseNormals[i] * 2.4,
+          ) *
+            wobble +
+          Math.cos(
+            elapsed * (state.pulseSpeed * 0.55) + baseNormals[i + 1] * 3.6,
+          ) *
+            wobble *
+            0.55;
         const tension = wave + flash * 0.08 - fracture * 0.05;
         positions[i] = basePositions[i] + baseNormals[i] * tension;
         positions[i + 1] = basePositions[i + 1] + baseNormals[i + 1] * tension;
@@ -218,9 +267,12 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
       particleMaterial.color.lerp(accent, 0.05);
 
       coreMaterial.emissiveIntensity = 0.5 + pulse * 1.25 + flash * 0.8;
-      shellMaterial.opacity = state.shellOpacity + pulse * 0.08 + fracture * 0.06;
+      shellMaterial.opacity =
+        state.shellOpacity + pulse * 0.08 + fracture * 0.06;
       innerCore.scale.setScalar(0.92 + pulse * 0.22 + flash * 0.08);
-      core.scale.setScalar(0.98 + pulse * 0.16 + flash * 0.05 - fracture * 0.04);
+      core.scale.setScalar(
+        0.98 + pulse * 0.16 + flash * 0.05 - fracture * 0.04,
+      );
 
       renderer.render(scene, camera);
       frameId = window.requestAnimationFrame(animate);
@@ -348,19 +400,72 @@ export default function AgentCoreVisual({ status, tone, isStale }: AgentCoreVisu
   }, [isStale, status, tone]);
 
   return (
-    <section className="agent-panel rounded-[2rem] p-4 md:p-6">
-      <div className="mb-4 flex items-center justify-between gap-4 px-2">
-        <div>
-          <p className="eyebrow mb-2">3D Live Core</p>
-          <h2 className="text-2xl font-semibold tracking-tight">Programmatic status identity</h2>
+    <section className="agent-panel agent-hero-panel rounded-[2rem] p-6 md:p-8">
+      <div className="agent-scanline" />
+      <div className="agent-info-popover">
+        <button
+          aria-label="About this agent"
+          className="agent-info-popover__trigger"
+          type="button"
+        >
+          <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
+            <circle
+              cx="12"
+              cy="12"
+              fill="none"
+              r="9"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            />
+            <path
+              d="M12 10.1v5.2M12 7.75h.01"
+              fill="none"
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeWidth="1.8"
+            />
+          </svg>
+        </button>
+        <div className="agent-info-popover__tooltip">
+          <p className="mt-3 text-sm leading-7 text-[color:var(--foreground)]">
+            This page shows the live status of my AI agent running on the cloud.
+            I mostly interact with it through a Gmail bridge: I send it emails,
+            it picks up tasks, runs them, and reports back. The event stream on
+            the right is a public window into its recent activity.
+          </p>
+          <a
+            className="mt-4 inline-flex text-sm font-semibold text-[color:var(--accent)] underline-offset-4 hover:underline"
+            href="https://github.com/hcsum/my-opencode-agent"
+            rel="noreferrer"
+            target="_blank"
+          >
+            View the repo on GitHub
+          </a>
         </div>
-        <p className="text-right text-xs uppercase tracking-[0.18em] text-[color:var(--muted)]">
-          No external model assets
-        </p>
       </div>
+      <div className="relative flex min-h-[26rem] flex-col items-center justify-center gap-8 overflow-visible pt-4 md:pt-6">
+        <div className="agent-core-wrap">
+          <div className="agent-core-halo" />
+          <div className="agent-core-ring" />
+          <div className="agent-core-ring agent-core-ring--inner" />
+          <div className="agent-core-stage mx-auto aspect-square w-full max-w-[18rem] overflow-hidden rounded-full md:max-w-[20rem]">
+            <canvas className="h-full w-full" ref={canvasRef} />
+          </div>
+        </div>
 
-      <div className="agent-core-stage rounded-[1.7rem] border border-[color:var(--line)] bg-[color:var(--surface)]/80">
-        <canvas className="h-full w-full" ref={canvasRef} />
+        <div className="relative z-10 flex max-w-2xl flex-col items-center text-center">
+          <div className="agent-hero-badge">
+            <span className="agent-hero-badge__dot" />
+            <span>Agent Status: {getStatusChipLabel(status)}</span>
+          </div>
+          <h1 className="agent-display mt-5 text-3xl font-bold tracking-[-0.03em] text-[color:var(--foreground)] md:text-5xl">
+            {title ?? "Core synapse synchronized"}
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
+            {summary ??
+              "The agent is alive, breathing, and continuously responding as new work enters its orbit."}
+          </p>
+        </div>
       </div>
     </section>
   );

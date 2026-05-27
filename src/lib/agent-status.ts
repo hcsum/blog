@@ -2,7 +2,8 @@ import { useSyncExternalStore } from "react";
 
 export const AGENT_STATUS_CURRENT_URL = "https://vps1.hcxu.cc/current.json";
 export const AGENT_STATUS_EVENTS_URL = "https://vps1.hcxu.cc/events.json";
-export const AGENT_STATUS_POLL_INTERVAL_MS = 15_000;
+export const AGENT_STATUS_POLL_INTERVAL_MS = 10_000;
+const MOCK_AGENT_SEED_AT = Date.UTC(2026, 4, 27, 7, 30, 0);
 
 export type AgentCurrentStatus = {
   status: string;
@@ -10,6 +11,11 @@ export type AgentCurrentStatus = {
   summary?: string;
   updatedAt: string;
   activeCount?: number;
+  stats?: {
+    tasksHandled?: number;
+    tasksCompleted?: number;
+    tasksFailed?: number;
+  };
   source?: string;
   taskType?: string;
 };
@@ -115,6 +121,277 @@ let hasStartedPolling = false;
 let currentRequest: Promise<void> | null = null;
 let eventsRequest: Promise<void> | null = null;
 
+const mockFrames: Array<{
+  current: AgentCurrentStatus;
+  events: AgentEvent[];
+  fingerprint: string;
+}> = [
+  {
+    current: {
+      status: "researching",
+      title: "Researching deployment notes",
+      summary: "Collecting public context and recent upstream changes before drafting a status summary.",
+      updatedAt: new Date(MOCK_AGENT_SEED_AT + 16 * 60 * 1000).toISOString(),
+      activeCount: 1,
+      stats: {
+        tasksHandled: 42,
+        tasksCompleted: 36,
+        tasksFailed: 6,
+      },
+      source: "gmail",
+      taskType: "research",
+    },
+    events: [
+      {
+        id: "deployment-01",
+        ts: new Date(MOCK_AGENT_SEED_AT).toISOString(),
+        type: "deployment",
+        status: "deployment",
+        title: "Public status publisher deployed",
+        summary: "A fresh site + agent build went live and started publishing public activity snapshots.",
+        source: "workflow",
+        taskType: "scheduled-task",
+        commitSha: "b56b255",
+        actor: "hcsum",
+      },
+      {
+        id: "task-received-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 4 * 60 * 1000).toISOString(),
+        type: "task_received",
+        status: "received",
+        title: "Task received",
+        summary: "A new request landed through the public email workflow.",
+        source: "gmail",
+        taskType: "research",
+        runId: "local-demo-001",
+        actor: "hcsum",
+      },
+      {
+        id: "task-started-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 7 * 60 * 1000).toISOString(),
+        type: "task_started",
+        status: "running",
+        title: "Task started",
+        summary: "Execution moved from queue into the active worker slot.",
+        source: "gmail",
+        taskType: "research",
+        runId: "local-demo-001",
+        actor: "hcsum",
+      },
+      {
+        id: "skill-loaded-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 10 * 60 * 1000).toISOString(),
+        type: "skill_loaded",
+        status: "running",
+        title: "Skill loaded",
+        summary: "Loaded a public-safe skill package for live web access.",
+        source: "gmail",
+        taskType: "research",
+        skillName: "web-access",
+        runId: "local-demo-001",
+      },
+      {
+        id: "research-started-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 13 * 60 * 1000).toISOString(),
+        type: "research_started",
+        status: "researching",
+        title: "Research phase started",
+        summary: "The agent entered its evidence-gathering phase and is collecting the public inputs it needs.",
+        source: "gmail",
+        taskType: "research",
+        durationMs: 184000,
+        runId: "local-demo-001",
+      },
+    ],
+    fingerprint: "local-frame-researching",
+  },
+  {
+    current: {
+      status: "drafting",
+      title: "Drafting final response",
+      summary: "The agent has enough evidence and is converging on a user-facing summary.",
+      updatedAt: new Date(MOCK_AGENT_SEED_AT + 31 * 60 * 1000).toISOString(),
+      activeCount: 1,
+      stats: {
+        tasksHandled: 42,
+        tasksCompleted: 36,
+        tasksFailed: 6,
+      },
+      source: "scheduler",
+      taskType: "scheduled-report",
+    },
+    events: [
+      {
+        id: "scheduled-report-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 19 * 60 * 1000).toISOString(),
+        type: "scheduled_report_started",
+        status: "running",
+        title: "Scheduled report started",
+        summary: "A recurring report run woke up and started preparing the next delivery.",
+        source: "scheduler",
+        taskType: "scheduled-report",
+        runId: "local-demo-002",
+        actor: "scheduler",
+      },
+      {
+        id: "web-data-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 22 * 60 * 1000).toISOString(),
+        type: "web_data_started",
+        status: "researching",
+        title: "Web data collection started",
+        summary: "Public web sources are being collected and normalized into a compact brief.",
+        source: "scheduler",
+        taskType: "scheduled-report",
+        skillName: "web-access",
+        runId: "local-demo-002",
+      },
+      {
+        id: "knowledge-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 26 * 60 * 1000).toISOString(),
+        type: "knowledge_update_started",
+        status: "knowledge",
+        title: "Knowledge system updated",
+        summary: "Relevant notes were pushed into the persistent knowledge layer before the final write-up.",
+        source: "scheduler",
+        taskType: "knowledge-task",
+        skillName: "llm-wiki",
+        runId: "local-demo-002",
+      },
+      {
+        id: "draft-started-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 29 * 60 * 1000).toISOString(),
+        type: "draft_started",
+        status: "drafting",
+        title: "Draft started",
+        summary: "The response is now being written in public-safe form.",
+        source: "scheduler",
+        taskType: "scheduled-report",
+        durationMs: 132000,
+        runId: "local-demo-002",
+      },
+    ],
+    fingerprint: "local-frame-drafting",
+  },
+  {
+    current: {
+      status: "failed",
+      title: "Task failed safely",
+      summary: "A public task hit a recoverable error. The failure summary is intentionally sanitized.",
+      updatedAt: new Date(MOCK_AGENT_SEED_AT + 45 * 60 * 1000).toISOString(),
+      activeCount: 0,
+      stats: {
+        tasksHandled: 43,
+        tasksCompleted: 36,
+        tasksFailed: 7,
+      },
+      source: "workflow",
+      taskType: "email-task",
+    },
+    events: [
+      {
+        id: "task-queued-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 34 * 60 * 1000).toISOString(),
+        type: "task_queued",
+        status: "queued",
+        title: "Task queued",
+        summary: "A follow-up request was accepted and placed into the public execution queue.",
+        source: "workflow",
+        taskType: "email-task",
+        runId: "local-demo-003",
+      },
+      {
+        id: "task-started-02",
+        ts: new Date(MOCK_AGENT_SEED_AT + 37 * 60 * 1000).toISOString(),
+        type: "task_started",
+        status: "running",
+        title: "Task started",
+        summary: "Execution began for the queued follow-up task.",
+        source: "workflow",
+        taskType: "email-task",
+        runId: "local-demo-003",
+      },
+      {
+        id: "skill-loaded-02",
+        ts: new Date(MOCK_AGENT_SEED_AT + 39 * 60 * 1000).toISOString(),
+        type: "skill_loaded",
+        status: "running",
+        title: "Capability loaded",
+        summary: "Loaded a whitelisted capability before attempting the task.",
+        source: "workflow",
+        taskType: "email-task",
+        skillName: "openai-docs",
+        runId: "local-demo-003",
+      },
+      {
+        id: "task-failed-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 43 * 60 * 1000).toISOString(),
+        type: "task_failed",
+        status: "failed",
+        title: "Task failed",
+        summary: "The task ended unsuccessfully after an upstream dependency returned invalid data.",
+        source: "workflow",
+        taskType: "email-task",
+        durationMs: 288000,
+        runId: "local-demo-003",
+      },
+    ],
+    fingerprint: "local-frame-failed",
+  },
+  {
+    current: {
+      status: "idle",
+      title: "Agent idle",
+      summary: "No public task is currently running. The system is waiting for the next safe workload.",
+      updatedAt: new Date(MOCK_AGENT_SEED_AT + 58 * 60 * 1000).toISOString(),
+      activeCount: 0,
+      stats: {
+        tasksHandled: 44,
+        tasksCompleted: 37,
+        tasksFailed: 7,
+      },
+      source: "scheduler",
+      taskType: "scheduled-task",
+    },
+    events: [
+      {
+        id: "report-delivered-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 49 * 60 * 1000).toISOString(),
+        type: "report_delivered",
+        status: "delivered",
+        title: "Report delivered",
+        summary: "A scheduled brief was delivered successfully.",
+        source: "scheduler",
+        taskType: "scheduled-report",
+        durationMs: 305000,
+        runId: "local-demo-002",
+      },
+      {
+        id: "task-completed-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 53 * 60 * 1000).toISOString(),
+        type: "task_completed",
+        status: "completed",
+        title: "Task completed",
+        summary: "A previous task finished and the public state was closed cleanly.",
+        source: "scheduler",
+        taskType: "scheduled-task",
+        durationMs: 421000,
+        runId: "local-demo-002",
+      },
+      {
+        id: "agent-idle-01",
+        ts: new Date(MOCK_AGENT_SEED_AT + 56 * 60 * 1000).toISOString(),
+        type: "agent_idle",
+        status: "idle",
+        title: "Agent idle",
+        summary: "No active public task remains after the last delivery.",
+        source: "scheduler",
+        taskType: "scheduled-task",
+      },
+    ],
+    fingerprint: "local-frame-idle",
+  },
+];
+
 function buildSnapshot(state: {
   current: EndpointState<AgentCurrentStatus>;
   events: EndpointState<AgentEventsResponse>;
@@ -169,6 +446,10 @@ function updateState(
 }
 
 async function requestJson<T>(url: string): Promise<T> {
+  if (shouldUseLocalAgentMocks()) {
+    return getLocalMockResponse<T>(url);
+  }
+
   const response = await fetch(url, {
     headers: { accept: "application/json" },
     cache: "no-store",
@@ -413,4 +694,49 @@ export function getEventTypeLabel(type: string) {
     .filter(Boolean)
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function shouldUseLocalAgentMocks() {
+  if (typeof window === "undefined") return false;
+
+  return import.meta.env.DEV && isLocalHostname(window.location.hostname);
+}
+
+function isLocalHostname(hostname: string) {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+function getLocalMockResponse<T>(url: string): Promise<T> {
+  const frame = getLocalMockFrame();
+
+  if (url === AGENT_STATUS_CURRENT_URL) {
+    return Promise.resolve(frame.current as T);
+  }
+
+  if (url === AGENT_STATUS_EVENTS_URL) {
+    return Promise.resolve({
+      updatedAt: frame.current.updatedAt,
+      events: frame.events,
+      meta: {
+        deploymentFingerprint: frame.fingerprint,
+      },
+    } as T);
+  }
+
+  throw new Error(`No local mock configured for ${url}`);
+}
+
+function getLocalMockFrame() {
+  const elapsed = Math.max(Date.now() - MOCK_AGENT_SEED_AT, 0);
+  const intervalIndex = Math.floor(elapsed / AGENT_STATUS_POLL_INTERVAL_MS);
+  const frameIndex = intervalIndex % mockFrames.length;
+  const activeFrame = mockFrames[frameIndex];
+  const cumulativeEvents = mockFrames
+    .slice(0, frameIndex + 1)
+    .flatMap((frame) => frame.events);
+
+  return {
+    ...activeFrame,
+    events: cumulativeEvents,
+  };
 }

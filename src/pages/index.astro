@@ -3,24 +3,31 @@ import { getCollection } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import PostCard from "@/components/PostCard.astro";
 import LandingScene from "@/components/LandingScene";
+import { experiences } from "@/components/Experiences";
 import { sortPosts } from "@/lib/blog";
 
 const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).slice(0, 4);
 ---
 
-<BaseLayout>
+<BaseLayout title="Haochen Xu" description="Personal site for writing, web experiments, and notes on things worth understanding deeply.">
   <LandingScene client:only="react" />
-  <section class="hero-grid border-b border-[color:var(--line)]">
+  <section class="border-b border-[color:var(--line)]">
     <div class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1.3fr_0.7fr] lg:py-28">
       <div>
-        <p class="eyebrow mb-5">Content-Driven. Experiment-Hungry.</p>
+        <p class="eyebrow mb-5">Hello World</p>
         <h1 class="max-w-4xl text-5xl font-semibold leading-tight tracking-tight md:text-7xl">
-          A kickass blog foundation for essays, engineering notes, and weird frontend ideas.
+          Welcome! My name is Haochen Xu.
         </h1>
-        <p class="mt-7 max-w-2xl text-lg leading-8 text-[color:var(--muted)]">
-          This site now runs on Astro, keeps the writing workflow Markdown-first, and leaves plenty of room
-          for React-powered experiments when plain content is not enough.
-        </p>
+        <div class="mt-7 max-w-2xl space-y-5 text-lg leading-8 text-[color:var(--muted)]">
+          <p>Over my career, I mainly worked full-stack in the web and JavaScript ecosystem.</p>
+          <p>Recently I&apos;m interested in Three.js and cool CSS effects. This site is me experimenting and having fun with it.</p>
+          <p>
+            It&apos;s a static website with blog posts generated from markdown files. The code is available at
+            <a class="ml-2 font-semibold text-[color:var(--accent)] underline-offset-4 hover:underline" href="https://github.com/hcsum/blog">
+              GitHub
+            </a>.
+          </p>
+        </div>
         <div class="mt-10 flex flex-wrap gap-4">
           <a class="rounded-full bg-[color:var(--foreground)] px-6 py-3 text-sm font-semibold text-[color:var(--background)] transition hover:scale-[1.02]" href="/posts/">
             Read the posts
@@ -31,13 +38,22 @@ const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).
         </div>
       </div>
       <div class="glass-panel rounded-[2rem] p-7">
-        <p class="eyebrow mb-4">Built-In Strengths</p>
-        <ul class="space-y-4 text-base leading-7 text-[color:var(--muted)]">
-          <li>Type-safe content collections instead of hand-rolled HTML generation.</li>
-          <li>Markdown-first authoring with room for MDX when a post needs components.</li>
-          <li>Static pages, sitemap, RSS, and low-JS rendering by default.</li>
-          <li>React islands kept for Three.js, animation, and future experiments.</li>
-        </ul>
+        <p class="eyebrow mb-4">Experience</p>
+        <div class="h-[28rem] space-y-4 overflow-y-auto pr-2 md:h-[36rem]">
+          {experiences.map((experience) => (
+            <article class="border-b border-[color:var(--line)] pb-4 last:border-b-0 last:pb-0">
+              <div class="flex items-start justify-between gap-4">
+                <h2 class="text-base font-semibold text-[color:var(--foreground)]">
+                  {experience.company ?? experience.title}
+                </h2>
+                <span class="shrink-0 text-xs uppercase tracking-[0.14em] text-[color:var(--muted)]">
+                  {experience.startDate} - {experience.endDate}
+                </span>
+              </div>
+              <p class="mt-2 text-sm leading-7 text-[color:var(--muted)]">{experience.title}</p>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   </section>
