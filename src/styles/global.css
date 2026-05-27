@@ -12,6 +12,11 @@
   --accent-strong: #115e59;
   --muted: #5b6472;
   --shadow: 0 30px 80px rgba(15, 23, 42, 0.12);
+  --agent-cyan: #67e8f9;
+  --agent-green: #a3e635;
+  --agent-amber: #fbbf24;
+  --agent-red: #fb7185;
+  --agent-violet: #a78bfa;
 }
 
 :root.dark {
@@ -24,6 +29,11 @@
   --accent-strong: #99f6e4;
   --muted: #cbd5e1;
   --shadow: 0 30px 80px rgba(2, 6, 23, 0.4);
+  --agent-cyan: #67e8f9;
+  --agent-green: #bef264;
+  --agent-amber: #fbbf24;
+  --agent-red: #fb7185;
+  --agent-violet: #c4b5fd;
 }
 
 html {
@@ -110,4 +120,225 @@ a {
     linear-gradient(var(--line) 1px, transparent 1px),
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 28px 28px;
+}
+
+.agent-console-shell {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(103, 232, 249, 0.16), transparent 24%),
+    radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 22%),
+    linear-gradient(180deg, rgba(8, 15, 28, 0.04), rgba(8, 15, 28, 0)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 46%);
+}
+
+.agent-console-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.agent-console-shell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  mix-blend-mode: soft-light;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.9) 0.6px, transparent 0.7px),
+    radial-gradient(circle at 70% 55%, rgba(255, 255, 255, 0.6) 0.5px, transparent 0.6px);
+  background-size: 18px 18px, 24px 24px;
+}
+
+.agent-panel {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(160deg, color-mix(in srgb, var(--surface-strong) 86%, transparent), rgba(255, 255, 255, 0.02)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 46%);
+  border: 1px solid color-mix(in srgb, var(--agent-tone, var(--line)) 18%, var(--line));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset,
+    0 32px 90px rgba(2, 6, 23, 0.2),
+    0 0 36px var(--agent-glow, rgba(103, 232, 249, 0.1));
+  backdrop-filter: blur(20px);
+}
+
+.agent-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background:
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      transparent 46%,
+      color-mix(in srgb, var(--agent-tone, var(--line)) 30%, transparent) 50%,
+      transparent 54%,
+      transparent 100%
+    );
+  background-size: 100% 24px;
+}
+
+.agent-chip,
+.agent-subchip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--agent-tone, var(--line)) 32%, var(--line));
+  background: color-mix(in srgb, var(--agent-glow, rgba(103, 232, 249, 0.12)) 62%, transparent);
+  color: var(--foreground);
+}
+
+.agent-chip {
+  padding: 0.45rem 0.78rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.agent-subchip {
+  padding: 0.38rem 0.74rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.agent-event-card {
+  position: relative;
+  background:
+    linear-gradient(165deg, color-mix(in srgb, var(--agent-ink, var(--surface-strong)) 36%, transparent), transparent 70%),
+    color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  box-shadow: 0 20px 60px rgba(2, 6, 23, 0.12);
+}
+
+.agent-event-card::after {
+  content: "";
+  position: absolute;
+  inset: auto auto 0 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--agent-tone, var(--accent)), transparent);
+  opacity: 0.72;
+}
+
+.agent-core-stage {
+  position: relative;
+  min-height: 340px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 26px 70px rgba(2, 6, 23, 0.22);
+}
+
+.agent-core-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at center, rgba(103, 232, 249, 0.16), transparent 40%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent 35%);
+}
+
+.agent-core-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background:
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.08), transparent),
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 100% 140px, 24px 24px, 24px 24px;
+}
+
+.agent-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.58rem;
+  background:
+    radial-gradient(circle at center, color-mix(in srgb, var(--agent-glow, rgba(103, 232, 249, 0.1)) 90%, transparent), transparent 72%),
+    color-mix(in srgb, var(--surface-strong) 88%, transparent);
+  box-shadow: 0 12px 36px var(--agent-glow, rgba(103, 232, 249, 0.12));
+}
+
+.agent-indicator__ring,
+.agent-indicator__scan {
+  stroke: var(--agent-tone, var(--accent));
+  stroke-linecap: round;
+}
+
+.agent-indicator__ring {
+  opacity: 0.7;
+  stroke-width: 1.2;
+  animation: agent-orbit 2.8s linear infinite;
+  transform-origin: 12px 12px;
+}
+
+.agent-indicator__ring--offset {
+  opacity: 0.34;
+  animation-direction: reverse;
+  animation-duration: 4.6s;
+}
+
+.agent-indicator__core {
+  fill: var(--agent-tone, var(--accent));
+  filter: drop-shadow(0 0 10px var(--agent-glow, rgba(103, 232, 249, 0.18)));
+  animation: agent-pulse 1.8s ease-in-out infinite;
+}
+
+.agent-indicator__scan {
+  opacity: 0.32;
+  stroke-width: 1;
+  animation: agent-scan 2.2s ease-in-out infinite;
+}
+
+@keyframes agent-pulse {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.76;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes agent-orbit {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes agent-scan {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-indicator__ring,
+  .agent-indicator__core,
+  .agent-indicator__scan {
+    animation: none;
+  }
 }

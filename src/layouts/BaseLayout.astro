@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import AgentHeaderIndicator from "@/components/agent/AgentHeaderIndicator";
 
 interface Props {
   title?: string;
@@ -39,12 +40,13 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           <a class="text-sm font-semibold tracking-[0.24em] text-[color:var(--accent)] uppercase" href="/">
             Haochen Xu
           </a>
-          <nav class="flex items-center gap-4 text-sm font-medium text-[color:var(--muted)]">
+          <nav class="flex items-center gap-3 text-sm font-medium text-[color:var(--muted)]">
             <a class="transition hover:text-[color:var(--foreground)]" href="/posts/">Posts</a>
             <a class="transition hover:text-[color:var(--foreground)]" href="/threejs/">Three.js</a>
+            <AgentHeaderIndicator client:only="react" />
             <button
               id="theme-toggle"
-              class="rounded-full border border-[color:var(--line)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-[color:var(--foreground)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]"
+              class="shrink-0 rounded-full border border-[color:var(--line)] px-3 py-1.5 text-xs uppercase tracking-[0.2em] text-[color:var(--foreground)] transition hover:border-[color:var(--accent)] hover:text-[color:var(--accent)]"
               type="button"
             >
               Theme
