@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   getStatusChipLabel,
@@ -46,7 +46,9 @@ export default function AgentCoreVisual({
   isStale,
 }: AgentCoreVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef(normalizeStatus(status));
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const visualStateRef = useRef<VisualState>({
     pulseSpeed: 0.7,
     wobble: 0.04,
@@ -60,6 +62,31 @@ export default function AgentCoreVisual({
   useEffect(() => {
     statusRef.current = normalizeStatus(status);
   }, [status]);
+
+  useEffect(() => {
+    if (!isInfoOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (popoverRef.current?.contains(target)) return;
+      setIsInfoOpen(false);
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsInfoOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isInfoOpen]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -402,10 +429,19 @@ export default function AgentCoreVisual({
   return (
     <section className="agent-panel agent-hero-panel rounded-[2rem] p-6 md:p-8">
       <div className="agent-scanline" />
-      <div className="agent-info-popover">
+      <div
+        className="agent-info-popover"
+        data-open={isInfoOpen ? "true" : "false"}
+        ref={popoverRef}
+      >
         <button
           aria-label="About this agent"
+          aria-expanded={isInfoOpen}
+          aria-haspopup="dialog"
           className="agent-info-popover__trigger"
+          onClick={() => {
+            setIsInfoOpen((previous) => !previous);
+          }}
           type="button"
         >
           <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
@@ -426,7 +462,7 @@ export default function AgentCoreVisual({
             />
           </svg>
         </button>
-        <div className="agent-info-popover__tooltip">
+        <div className="agent-info-popover__tooltip" role="dialog">
           <p className="mt-3 text-sm leading-7 text-[color:var(--foreground)]">
             This page shows the live status of my AI agent running on the cloud.
             I mostly interact with it through a Gmail bridge: I send it emails,
@@ -463,7 +499,7 @@ export default function AgentCoreVisual({
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
             {summary ??
-              "The agent is alive, breathing, and continuously responding as new work enters its orbit."}
+              "The agent is alive, breathing, and awaiting new work enters its orbit."}
           </p>
         </div>
       </div>

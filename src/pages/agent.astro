@@ -1,11 +1,14 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import AgentStatusDashboard from "@/components/agent/AgentStatusDashboard";
+import AgentStatusFallback from "@/components/agent/AgentStatusFallback.astro";
 ---
 
 <BaseLayout
   title="Agent Status | Haochen Xu"
   description="A public status panel for the live agent, showing its current state, recent activity, and live visual identity."
 >
-  <AgentStatusDashboard client:only="react" />
+  <AgentStatusDashboard client:only="react">
+    <AgentStatusFallback slot="fallback" />
+  </AgentStatusDashboard>
 </BaseLayout>

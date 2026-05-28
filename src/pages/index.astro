@@ -9,20 +9,20 @@ import { sortPosts } from "@/lib/blog";
 const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).slice(0, 4);
 ---
 
-<BaseLayout title="Haochen Xu" description="Personal site for writing, web experiments, and notes on things worth understanding deeply.">
+<BaseLayout title="Haochen Xu" description="Personal site of Haochen Xu: writing about software, frontend work, and experiments on the web.">
   <LandingScene client:only="react" />
   <section class="border-b border-[color:var(--line)]">
     <div class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1.3fr_0.7fr] lg:py-28">
       <div>
         <p class="eyebrow mb-5">Hello World</p>
         <h1 class="max-w-4xl text-5xl font-semibold leading-tight tracking-tight md:text-7xl">
-          Welcome! My name is Haochen Xu.
+          I&apos;m Haochen Xu, a developer who likes building for the web.
         </h1>
         <div class="mt-7 max-w-2xl space-y-5 text-lg leading-8 text-[color:var(--muted)]">
-          <p>Over my career, I mainly worked full-stack in the web and JavaScript ecosystem.</p>
-          <p>Recently I&apos;m interested in Three.js and cool CSS effects. This site is me experimenting and having fun with it.</p>
+          <p>I mainly work across frontend and full-stack JavaScript, with a soft spot for interfaces that feel clear, fast, and alive.</p>
+          <p>This site is where I publish notes from work, side projects, and experiments with visuals, Three.js, and CSS.</p>
           <p>
-            It&apos;s a static website with blog posts generated from markdown files. The code is available at
+            I like keeping the code and writing close together. The source for this site lives on
             <a class="ml-2 font-semibold text-[color:var(--accent)] underline-offset-4 hover:underline" href="https://github.com/hcsum/blog">
               GitHub
             </a>.
@@ -62,7 +62,7 @@ const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).
     <div class="mb-8 flex items-end justify-between gap-4">
       <div>
         <p class="eyebrow mb-3">Recent Writing</p>
-        <h2 class="text-3xl font-semibold tracking-tight">Fresh posts from the notebook</h2>
+        <h2 class="text-3xl font-semibold tracking-tight">Latest notes and experiments</h2>
       </div>
       <a class="text-sm font-semibold text-[color:var(--accent)]" href="/posts/">Browse archive</a>
     </div>
