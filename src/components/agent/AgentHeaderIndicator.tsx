@@ -7,17 +7,27 @@ import {
   useAgentStatusFeed,
 } from "@/lib/agent-status";
 
-export default function AgentHeaderIndicator() {
+interface AgentHeaderIndicatorProps {
+  compact?: boolean;
+}
+
+export default function AgentHeaderIndicator({
+  compact = false,
+}: AgentHeaderIndicatorProps) {
   const feed = useAgentStatusFeed();
   const tone = getToneMeta(feed.derived.statusTone);
   const label = feed.current.data
     ? getHeaderLabel(feed.derived.status)
     : "AGENT UNAVAILABLE";
   const summary = feed.current.data?.summary ?? "Public status feed";
+  const className = compact
+    ? "agent-indicator shrink-0 rounded-full border border-[color:var(--line)] p-2 transition hover:border-[color:var(--accent)] hover:text-[color:var(--foreground)]"
+    : "agent-indicator shrink-0 rounded-full border border-[color:var(--line)] px-3 py-1.5 transition hover:border-[color:var(--accent)] hover:text-[color:var(--foreground)]";
 
   return (
     <a
-      className="agent-indicator shrink-0 rounded-full border border-[color:var(--line)] px-3 py-1.5 transition hover:border-[color:var(--accent)] hover:text-[color:var(--foreground)]"
+      aria-label={`${label}. ${summary}`}
+      className={className}
       href="/agent"
       style={
         {
@@ -29,7 +39,7 @@ export default function AgentHeaderIndicator() {
     >
       <svg
         aria-hidden="true"
-        className="h-5 w-5 shrink-0"
+        className={`${compact ? "h-[1.125rem] w-[1.125rem]" : "h-5 w-5"} shrink-0`}
         viewBox="0 0 24 24"
         fill="none"
       >
@@ -38,9 +48,11 @@ export default function AgentHeaderIndicator() {
         <circle className="agent-indicator__core" cx="12" cy="12" r="3.2" />
         <path className="agent-indicator__scan" d="M4 12h16" />
       </svg>
-      <span className="max-w-[8rem] truncate text-[0.68rem] font-semibold uppercase tracking-[0.18em]">
-        {label}
-      </span>
+      {!compact ? (
+        <span className="max-w-[8rem] truncate text-[0.68rem] font-semibold uppercase tracking-[0.18em]">
+          {label}
+        </span>
+      ) : null}
     </a>
   );
 }
