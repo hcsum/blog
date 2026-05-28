@@ -10,6 +10,16 @@ export default function LandingScene() {
     const canvas = document.querySelector("#bg") as HTMLCanvasElement | null;
     if (!canvas) return;
 
+    const isTabletOrSmaller = window.innerWidth < 1024;
+    const isMobile = window.innerWidth < 768;
+    const ringBaseY = isMobile ? -4.2 : isTabletOrSmaller ? -3.8 : -3.2;
+    const ringTravelDistance = isMobile ? 1.8 : isTabletOrSmaller ? 2.3 : 2.8;
+    const ringBaseScale = isMobile ? 0.76 : isTabletOrSmaller ? 0.84 : 0.92;
+    const ringShrinkDistance = isMobile ? 0.6 : 0.75;
+    const astronautBaseX = isMobile ? 1.75 : isTabletOrSmaller ? 2.4 : 3;
+    const astronautBaseY = isMobile ? -6.6 : isTabletOrSmaller ? -6 : -5.4;
+    const astronautBaseRotationY = isMobile ? 0.35 : 0.22;
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -29,14 +39,21 @@ export default function LandingScene() {
     const textureLoader = new THREE.TextureLoader();
     addStars(scene);
     const { ring, cube } = addRing(scene, textureLoader);
+    ring.position.set(isTabletOrSmaller ? 0.9 : 1.5, ringBaseY, 0);
+    ring.scale.setScalar(ringBaseScale);
+
+    const ringMaterial = ring.material as THREE.MeshStandardMaterial;
+    ringMaterial.transparent = true;
+    ringMaterial.opacity = 0.7;
+    ringMaterial.needsUpdate = true;
 
     let astronaut: THREE.Mesh | null = null;
     let initialAstronautY = 0;
 
     const setupAstronaut = async () => {
       const mesh = await addAstronaut(scene, textureLoader);
-      mesh.position.set(0.5, -6, 3);
-      mesh.rotation.y = Math.PI / 2;
+      mesh.position.set(astronautBaseX, astronautBaseY, 3);
+      mesh.rotation.y = astronautBaseRotationY;
       astronaut = mesh;
       initialAstronautY = astronaut.rotation.y;
     };
@@ -80,8 +97,10 @@ export default function LandingScene() {
       const oscillationAngle = Math.sin(frame * 0.5) * (Math.PI / 4);
       ring.rotation.z += 0.002;
       ring.rotation.y = oscillationAngle;
-      ring.position.y = initialRingY + scrollPosY * 5;
-      ring.scale.setScalar(1 - scrollPosY * 1.5);
+      ring.position.y = initialRingY + scrollPosY * ringTravelDistance;
+      ring.scale.setScalar(
+        Math.max(ringBaseScale - scrollPosY * ringShrinkDistance, 0.48),
+      );
       frame = (frame + 0.01) % (Math.PI * 4);
 
       if (astronaut) {
@@ -109,5 +128,10 @@ export default function LandingScene() {
     };
   }, []);
 
-  return <canvas id="bg" className="pointer-events-none fixed inset-0 -z-10 h-full w-full opacity-80" />;
+  return (
+    <canvas
+      id="bg"
+      className="pointer-events-none fixed inset-0 -z-10 h-full w-full opacity-65"
+    />
+  );
 }
