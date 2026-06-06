@@ -11,8 +11,39 @@ export default function AgentStatusDashboard() {
 
   return (
     <section className="agent-console-shell border-b border-[color:var(--line)]">
-      <div className="mx-auto max-w-7xl px-5 py-16 md:py-20">
-        <div className="grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
+      <div className="mx-auto max-w-7xl px-5 py-8 md:py-10">
+        <header className="agent-intro max-w-3xl">
+          <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
+            This shows the live status of my AI agent running on the cloud. I
+            interact with it through a Gmail bridge. I send it emails, it picks
+            up tasks. It also does works for me periodically like sending me
+            morning reports containing updates on my favorite websites. The
+            event stream below is a public window into its recent activity.
+          </p>
+          <a
+            className="agent-intro__link mt-6"
+            href="https://github.com/hcsum/my-opencode-agent"
+            rel="noreferrer"
+            target="_blank"
+          >
+            View the repo on GitHub
+            <svg
+              aria-hidden="true"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M7 17 17 7M9 7h8v8"
+                stroke="currentColor"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1.8"
+              />
+            </svg>
+          </a>
+        </header>
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <div className="space-y-6">
             <AgentCoreVisual
               isStale={feed.derived.isStale}

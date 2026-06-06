@@ -1,3 +1,7 @@
+---
+date: 2024-06-27
+---
+
 # min heap vs max heap
 
 MaxHeap is good for keeping track of the k _smallest_ items

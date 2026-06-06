@@ -1,3 +1,7 @@
+---
+date: 2025-02-23
+---
+
 # MinHeap
 
 A **min-heap** is a binary tree where each node is less than or equal to its children.

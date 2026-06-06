@@ -16,6 +16,11 @@ export interface BlogMeta {
 
 const DATE_LINE_PATTERN = /^Date created:\s*(.+)$/im;
 const HEADING_PATTERN = /^#\s+(.+)$/m;
+const TAXONOMY_ACRONYMS: Record<string, string> = {
+  db: "DB",
+  dsa: "DSA",
+  js: "JS",
+};
 
 export function getPostMeta(entry: BlogEntry): BlogMeta {
   const body = entry.body ?? "";
@@ -30,7 +35,7 @@ export function getPostMeta(entry: BlogEntry): BlogMeta {
     entry.data.description?.trim() || getExcerpt(body, title);
   const tags = entry.data.tags?.length
     ? entry.data.tags
-    : pathSegments.slice(0, -1).map(humanize);
+    : pathSegments.slice(0, -1).map(humanizeTaxonomy);
 
   return {
     slug: entry.id,
@@ -38,7 +43,7 @@ export function getPostMeta(entry: BlogEntry): BlogMeta {
     title,
     description,
     publishedAt,
-    section: humanize(section),
+    section: humanizeTaxonomy(section),
     pathSegments,
     readingTime: getReadingTime(body),
     tags,
@@ -125,4 +130,9 @@ function humanize(value: string) {
   return value
     .replace(/[-_]+/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function humanizeTaxonomy(value: string) {
+  const normalized = value.trim().toLowerCase();
+  return TAXONOMY_ACRONYMS[normalized] ?? humanize(value);
 }

@@ -1,3 +1,7 @@
+---
+date: 2024-07-22
+---
+
 # I ask ChatGPT to explain the mouse in the maze problem
 
 ### Me:

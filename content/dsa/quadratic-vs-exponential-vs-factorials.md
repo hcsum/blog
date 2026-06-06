@@ -1,3 +1,7 @@
+---
+date: 2024-11-30
+---
+
 # Quadratic vs exponential vs factorials
 
 ## Quadratic Complexity - O(n²)

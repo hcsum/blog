@@ -1,3 +1,7 @@
+---
+date: 2024-10-11
+---
+
 # 🧠 What Should LLM-Facing Developers Know?
 
 > If building for the internet was the mainstream in the past 20 years, building for LLMs might be the future.

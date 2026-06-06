@@ -1,3 +1,7 @@
+---
+date: 2024-05-05
+---
+
 # Problem
 
 - Write a function that takes in an array of flight objects, a fare limit, and a flight origin,

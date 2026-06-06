@@ -1,3 +1,7 @@
+---
+date: 2024-10-15
+---
+
 # LRU caching
 
 ```typescript
