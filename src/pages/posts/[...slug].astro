@@ -34,7 +34,7 @@ const { Content, headings } = await render(post);
       <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">{meta.description}</p>
     </header>
 
-    <div class="grid gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
       <div class="glass-panel rounded-[2rem] p-6 md:p-10">
         <div class="prose prose-lg">
           <Content />

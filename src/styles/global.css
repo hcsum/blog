@@ -121,6 +121,23 @@ a {
 .prose pre {
   border: 1px solid rgba(148, 163, 184, 0.22);
   border-radius: 1rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.prose :not(pre) > code {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.prose a {
+  overflow-wrap: break-word;
 }
 
 .prose code::before,
