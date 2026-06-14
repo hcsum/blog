@@ -32,6 +32,7 @@ export type AgentEvent = {
   skillName?: string;
   durationMs?: number;
   commitSha?: string;
+  commitMessage?: string;
   runId?: string;
   actor?: string;
 };
@@ -147,11 +148,12 @@ const mockFrames: Array<{
         ts: new Date(MOCK_AGENT_SEED_AT).toISOString(),
         type: "deployment",
         status: "deployment",
-        title: "Public status publisher deployed",
-        summary: "A fresh site + agent build went live and started publishing public activity snapshots.",
+        title: "Deployment: b56b255",
+        summary: "feat(activity): surface concrete commit message in event stream · by hcsum · run local-demo-000",
         source: "workflow",
         taskType: "scheduled-task",
         commitSha: "b56b255",
+        commitMessage: "feat(activity): surface concrete commit message in event stream",
         actor: "hcsum",
       },
       {
