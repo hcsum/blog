@@ -4,6 +4,8 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import {
   getStatusChipLabel,
+  getStatusFallbackSummary,
+  getStatusFallbackTitle,
   getToneMeta,
   normalizeStatus,
   type AgentStatusTone,
@@ -418,11 +420,12 @@ export default function AgentCoreVisual({
             <span>Agent Status: {getStatusChipLabel(status)}</span>
           </div>
           <h2 className="agent-display mt-5 text-3xl font-bold tracking-[-0.03em] text-[color:var(--foreground)] md:text-5xl">
-            {title ?? "Core synapse synchronized"}
+            {isStale ? getStatusFallbackTitle(status, true) : title ?? getStatusFallbackTitle(status)}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
-            {summary ??
-              "The agent is alive, breathing, and awaiting new work enters its orbit."}
+            {isStale
+              ? getStatusFallbackSummary(status, true)
+              : summary ?? getStatusFallbackSummary(status)}
           </p>
         </div>
       </div>

@@ -628,6 +628,70 @@ export function getActivityLabel(status: string) {
   }
 }
 
+export function getStatusFallbackTitle(status: string, isStale = false) {
+  if (isStale) return "Agent offline";
+
+  switch (normalizeStatus(status)) {
+    case "deployment":
+      return "Deploying a fresh build";
+    case "received":
+      return "New task received";
+    case "queued":
+      return "Task queued";
+    case "running":
+      return "Working through a task";
+    case "researching":
+      return "Researching the request";
+    case "drafting":
+      return "Drafting a response";
+    case "knowledge":
+      return "Updating its knowledge";
+    case "completed":
+      return "Task completed";
+    case "delivered":
+      return "Report delivered";
+    case "failed":
+      return "Task failed safely";
+    case "idle":
+      return "Agent idle";
+    default:
+      return "Agent unavailable";
+  }
+}
+
+export function getStatusFallbackSummary(status: string, isStale = false) {
+  if (isStale) {
+    return "The agent feed has gone quiet — the last snapshot is stale and the agent may be offline.";
+  }
+
+  switch (normalizeStatus(status)) {
+    case "deployment":
+      return "A new build is rolling out. The agent will be back on task once the deployment settles.";
+    case "received":
+      return "A new request just landed and is being prepared for execution.";
+    case "queued":
+      return "A task is waiting in the queue for the next open worker slot.";
+    case "running":
+      return "The agent is actively executing a task right now.";
+    case "researching":
+      return "The agent is gathering public context before drafting its response.";
+    case "drafting":
+      return "The agent has enough evidence and is writing up its response.";
+    case "knowledge":
+      return "The agent is updating its persistent knowledge layer.";
+    case "completed":
+      return "The last task finished cleanly. The agent is wrapping up.";
+    case "delivered":
+      return "A scheduled brief was delivered successfully.";
+    case "failed":
+      return "The last task hit a recoverable error and stopped safely. Details are intentionally sanitized.";
+    case "idle":
+      return "No task is currently running. The agent is waiting for the next workload to enter its orbit.";
+    default:
+      return "The agent status is currently unavailable.";
+  }
+}
+
 export function formatLocalTimestamp(value?: string | null) {
   if (!value) return "Waiting for first snapshot";
 

@@ -15,10 +15,10 @@ export default function AgentStatusDashboard() {
         <header className="agent-intro max-w-3xl">
           <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
             This shows the live status of my AI agent running on the cloud. I
-            interact with it through a Gmail bridge. I send it emails, it picks
-            up tasks. It also does works for me periodically like sending me
-            morning reports containing updates on my favorite websites. The
-            event stream below is a public window into its recent activity.
+            interact with it through a Gmail bridge. I send it tasks and it
+            picks them up. It also does periodical tasks like sending me morning
+            reports containing updates on my favorite websites. The event stream
+            below is a public window into its recent activity.
           </p>
           <a
             className="agent-intro__link mt-6"
