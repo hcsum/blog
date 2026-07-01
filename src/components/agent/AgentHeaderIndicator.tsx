@@ -17,7 +17,7 @@ export default function AgentHeaderIndicator({
   const feed = useAgentStatusFeed();
   const tone = getToneMeta(feed.derived.statusTone);
   const label = feed.current.data
-    ? getHeaderLabel(feed.derived.status)
+    ? getHeaderLabel(feed.derived.status, feed.derived.presence)
     : "AGENT UNAVAILABLE";
   const summary = feed.current.data?.summary ?? "Public status feed";
   const className = compact
@@ -57,7 +57,15 @@ export default function AgentHeaderIndicator({
   );
 }
 
-function getHeaderLabel(status: string) {
+function getHeaderLabel(status: string, presence = "online") {
+  if (presence === "offline" && normalizeStatus(status) !== "failed") {
+    return "AGENT OFFLINE";
+  }
+
+  if (presence === "stale" && normalizeStatus(status) !== "failed") {
+    return "AGENT STALE";
+  }
+
   switch (normalizeStatus(status)) {
     case "idle":
       return "AGENT IDLE";

@@ -3,11 +3,13 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import {
+  formatPresenceLabel,
   getStatusChipLabel,
   getStatusFallbackSummary,
   getStatusFallbackTitle,
   getToneMeta,
   normalizeStatus,
+  type AgentPresence,
   type AgentStatusTone,
 } from "@/lib/agent-status";
 
@@ -16,7 +18,9 @@ type AgentCoreVisualProps = {
   summary?: string;
   status: string;
   tone: AgentStatusTone;
-  isStale: boolean;
+  presence: AgentPresence;
+  lastKnownStatus?: string;
+  hasFetchError: boolean;
 };
 
 type VisualState = {
@@ -37,6 +41,8 @@ const toneFallbacks: Record<AgentStatusTone, string> = {
   knowledge: "#5eead4",
   deployment: "#a78bfa",
   failed: "#fb7185",
+  stale: "#f59e0b",
+  offline: "#94a3b8",
   unavailable: "#94a3b8",
 };
 
@@ -45,7 +51,9 @@ export default function AgentCoreVisual({
   summary,
   status,
   tone,
-  isStale,
+  presence,
+  lastKnownStatus,
+  hasFetchError,
 }: AgentCoreVisualProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const statusRef = useRef(normalizeStatus(status));
@@ -380,15 +388,28 @@ export default function AgentCoreVisual({
       case "idle":
         visualStateRef.current = {
           pulseSpeed: 0.58,
-          wobble: isStale ? 0.025 : 0.038,
+          wobble: presence === "stale" ? 0.025 : 0.038,
           shellOpacity: 0.14,
           ringSpeed: 0.15,
           particleDrift: 0.12,
-          accent: isStale ? toneFallbacks.unavailable : meta.accent,
+          accent: presence === "offline" ? toneFallbacks.offline : meta.accent,
           secondary: "#e2e8f0",
         };
         break;
       default:
+        if (presence !== "online" && normalized !== "failed") {
+          visualStateRef.current = {
+            pulseSpeed: 0.42,
+            wobble: presence === "stale" ? 0.03 : 0.018,
+            shellOpacity: 0.1,
+            ringSpeed: 0.08,
+            particleDrift: 0.06,
+            accent: presence === "stale" ? toneFallbacks.stale : toneFallbacks.offline,
+            secondary: "#e2e8f0",
+          };
+          break;
+        }
+
         visualStateRef.current = {
           pulseSpeed: 0.48,
           wobble: 0.022,
@@ -399,7 +420,15 @@ export default function AgentCoreVisual({
           secondary: "#e2e8f0",
         };
     }
-  }, [isStale, status, tone]);
+  }, [presence, status, tone]);
+
+  const resolvedTitle = hasFetchError
+    ? "Agent unavailable"
+    : title ?? getStatusFallbackTitle(status, presence);
+  const resolvedSummary = hasFetchError
+    ? "The current status snapshot could not be fetched. Try again once the public status surface is reachable."
+    : summary ?? getStatusFallbackSummary(status, presence);
+  const showLastKnownStatus = presence !== "online" && normalizeStatus(lastKnownStatus);
 
   return (
     <section className="agent-panel agent-hero-panel rounded-[2rem] p-6 md:p-8">
@@ -419,13 +448,16 @@ export default function AgentCoreVisual({
             <span className="agent-hero-badge__dot" />
             <span>Agent Status: {getStatusChipLabel(status)}</span>
           </div>
+          {showLastKnownStatus ? (
+            <p className="mt-3 text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
+              Presence: {formatPresenceLabel(presence)} · Last known: {getStatusChipLabel(lastKnownStatus)}
+            </p>
+          ) : null}
           <h2 className="agent-display mt-5 text-3xl font-bold tracking-[-0.03em] text-[color:var(--foreground)] md:text-5xl">
-            {isStale ? getStatusFallbackTitle(status, true) : title ?? getStatusFallbackTitle(status)}
+            {resolvedTitle}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
-            {isStale
-              ? getStatusFallbackSummary(status, true)
-              : summary ?? getStatusFallbackSummary(status)}
+            {resolvedSummary}
           </p>
         </div>
       </div>

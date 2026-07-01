@@ -46,7 +46,9 @@ export default function AgentStatusDashboard() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <div className="space-y-6">
             <AgentCoreVisual
-              isStale={feed.derived.isStale}
+              hasFetchError={feed.derived.hasFetchError}
+              lastKnownStatus={feed.derived.lastKnownStatus}
+              presence={feed.derived.presence}
               summary={current?.summary}
               status={feed.derived.status}
               title={current?.title}

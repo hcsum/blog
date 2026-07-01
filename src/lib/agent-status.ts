@@ -1,9 +1,14 @@
 import { useSyncExternalStore } from "react";
 
-export const AGENT_STATUS_CURRENT_URL = "https://vps1.hcxu.cc/current.json";
-export const AGENT_STATUS_EVENTS_URL = "https://vps1.hcxu.cc/events.json";
-export const AGENT_STATUS_POLL_INTERVAL_MS = 10_000;
+export const AGENT_STATUS_BASE_URL = "https://opencode-agent-status.sumtsui.workers.dev";
+export const AGENT_STATUS_CURRENT_URL = `${AGENT_STATUS_BASE_URL}/current.json`;
+export const AGENT_STATUS_EVENTS_URL = `${AGENT_STATUS_BASE_URL}/events.json`;
+export const AGENT_STATUS_HEALTH_URL = `${AGENT_STATUS_BASE_URL}/health`;
+export const AGENT_STATUS_CURRENT_POLL_INTERVAL_MS = 10_000;
+export const AGENT_STATUS_EVENTS_POLL_INTERVAL_MS = 20_000;
 const MOCK_AGENT_SEED_AT = Date.UTC(2026, 4, 27, 7, 30, 0);
+
+export type AgentPresence = "online" | "stale" | "offline";
 
 export type AgentCurrentStatus = {
   status: string;
@@ -18,6 +23,9 @@ export type AgentCurrentStatus = {
   };
   source?: string;
   taskType?: string;
+  presence?: AgentPresence;
+  lastSeenAt?: string;
+  lastKnownStatus?: string;
 };
 
 export type AgentEvent = {
@@ -43,6 +51,8 @@ export type AgentEventsResponse = {
   meta?: {
     deploymentFingerprint?: string;
   };
+  presence?: AgentPresence;
+  lastSeenAt?: string;
 };
 
 export type AgentStatusTone =
@@ -53,6 +63,8 @@ export type AgentStatusTone =
   | "knowledge"
   | "deployment"
   | "failed"
+  | "stale"
+  | "offline"
   | "unavailable";
 
 type EndpointState<T> = {
@@ -69,9 +81,13 @@ export type AgentFeedSnapshot = {
   derived: {
     status: string;
     statusTone: AgentStatusTone;
+    presence: AgentPresence;
     isActive: boolean;
     isStale: boolean;
+    hasFetchError: boolean;
     displayTime: string | null;
+    lastSeenAt: string | null;
+    lastKnownStatus: string;
     activityLabel: string;
     eventsNewestFirst: AgentEvent[];
   };
@@ -91,6 +107,8 @@ const toneMetaMap: Record<AgentStatusTone, ToneMeta> = {
   knowledge: { accent: "#5eead4", glow: "rgba(94, 234, 212, 0.34)", ink: "#062623" },
   deployment: { accent: "#a78bfa", glow: "rgba(167, 139, 250, 0.34)", ink: "#1a1133" },
   failed: { accent: "#fb7185", glow: "rgba(251, 113, 133, 0.34)", ink: "#350b17" },
+  stale: { accent: "#f59e0b", glow: "rgba(245, 158, 11, 0.3)", ink: "#311b04" },
+  offline: { accent: "#94a3b8", glow: "rgba(148, 163, 184, 0.22)", ink: "#111827" },
   unavailable: { accent: "#94a3b8", glow: "rgba(148, 163, 184, 0.24)", ink: "#111827" },
 };
 
@@ -141,6 +159,8 @@ const mockFrames: Array<{
       },
       source: "gmail",
       taskType: "research",
+      presence: "online",
+      lastSeenAt: new Date(MOCK_AGENT_SEED_AT + 16 * 60 * 1000).toISOString(),
     },
     events: [
       {
@@ -221,6 +241,8 @@ const mockFrames: Array<{
       },
       source: "scheduler",
       taskType: "scheduled-report",
+      presence: "online",
+      lastSeenAt: new Date(MOCK_AGENT_SEED_AT + 31 * 60 * 1000).toISOString(),
     },
     events: [
       {
@@ -288,6 +310,8 @@ const mockFrames: Array<{
       },
       source: "workflow",
       taskType: "email-task",
+      presence: "online",
+      lastSeenAt: new Date(MOCK_AGENT_SEED_AT + 45 * 60 * 1000).toISOString(),
     },
     events: [
       {
@@ -353,6 +377,8 @@ const mockFrames: Array<{
       },
       source: "scheduler",
       taskType: "scheduled-task",
+      presence: "online",
+      lastSeenAt: new Date(MOCK_AGENT_SEED_AT + 58 * 60 * 1000).toISOString(),
     },
     events: [
       {
@@ -399,11 +425,12 @@ function buildSnapshot(state: {
   events: EndpointState<AgentEventsResponse>;
 }): AgentFeedSnapshot {
   const status = normalizeStatus(state.current.data?.status);
+  const presence = normalizePresence(state.current.data?.presence ?? state.events.data?.presence);
   const isActive =
-    typeof state.current.data?.activeCount === "number"
+    presence === "online" &&
+    (typeof state.current.data?.activeCount === "number"
       ? state.current.data.activeCount > 0
-      : ACTIVE_STATUSES.has(status);
-  const isStale = state.current.stale || state.events.stale;
+      : ACTIVE_STATUSES.has(status));
   const eventsNewestFirst = state.events.data ? [...state.events.data.events].reverse() : [];
 
   return {
@@ -411,11 +438,20 @@ function buildSnapshot(state: {
     events: state.events,
     derived: {
       status,
-      statusTone: mapStatusTone(status),
+      statusTone: mapStatusTone(status, presence),
+      presence,
       isActive,
-      isStale,
-      displayTime: state.current.data?.updatedAt ?? state.events.data?.updatedAt ?? null,
-      activityLabel: getActivityLabel(status),
+      isStale: presence === "stale",
+      hasFetchError: !state.current.data && Boolean(state.current.error),
+      displayTime:
+        state.current.data?.updatedAt ??
+        state.current.data?.lastSeenAt ??
+        state.events.data?.updatedAt ??
+        state.events.data?.lastSeenAt ??
+        null,
+      lastSeenAt: state.current.data?.lastSeenAt ?? state.events.data?.lastSeenAt ?? null,
+      lastKnownStatus: normalizeStatus(state.current.data?.lastKnownStatus),
+      activityLabel: getActivityLabel(status, presence),
       eventsNewestFirst,
     },
   };
@@ -545,8 +581,11 @@ function startPolling() {
 
   window.setInterval(() => {
     void refreshCurrent();
+  }, AGENT_STATUS_CURRENT_POLL_INTERVAL_MS);
+
+  window.setInterval(() => {
     void refreshEvents();
-  }, AGENT_STATUS_POLL_INTERVAL_MS);
+  }, AGENT_STATUS_EVENTS_POLL_INTERVAL_MS);
 }
 
 function subscribe(listener: () => void) {
@@ -566,8 +605,12 @@ export function useAgentStatusFeed() {
   return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 }
 
-export function mapStatusTone(status: string): AgentStatusTone {
+export function mapStatusTone(status: string, presence: AgentPresence = "online"): AgentStatusTone {
   switch (normalizeStatus(status)) {
+    case "offline":
+      return "offline";
+    case "stale":
+      return "stale";
     case "deployment":
       return "deployment";
     case "running":
@@ -587,6 +630,8 @@ export function mapStatusTone(status: string): AgentStatusTone {
     case "idle":
       return "idle";
     default:
+      if (presence === "offline") return "offline";
+      if (presence === "stale") return "stale";
       return "unavailable";
   }
 }
@@ -599,7 +644,25 @@ export function normalizeStatus(status?: string | null) {
   return (status ?? "").trim().toLowerCase();
 }
 
-export function getActivityLabel(status: string) {
+export function normalizePresence(presence?: string | null): AgentPresence {
+  const normalized = (presence ?? "").trim().toLowerCase();
+
+  if (normalized === "stale" || normalized === "offline") {
+    return normalized;
+  }
+
+  return "online";
+}
+
+export function getActivityLabel(status: string, presence: AgentPresence = "online") {
+  if (presence === "offline" && normalizeStatus(status) !== "failed") {
+    return "Agent offline";
+  }
+
+  if (presence === "stale" && normalizeStatus(status) !== "failed") {
+    return "Heartbeat delayed";
+  }
+
   switch (normalizeStatus(status)) {
     case "deployment":
       return "Deploying update";
@@ -628,10 +691,15 @@ export function getActivityLabel(status: string) {
   }
 }
 
-export function getStatusFallbackTitle(status: string, isStale = false) {
-  if (isStale) return "Agent offline";
+export function getStatusFallbackTitle(status: string, presence: AgentPresence = "online") {
+  if (presence === "offline") return "Agent offline";
+  if (presence === "stale") return "Heartbeat delayed";
 
   switch (normalizeStatus(status)) {
+    case "offline":
+      return "Agent offline";
+    case "stale":
+      return "Heartbeat delayed";
     case "deployment":
       return "Deploying a fresh build";
     case "received":
@@ -659,12 +727,20 @@ export function getStatusFallbackTitle(status: string, isStale = false) {
   }
 }
 
-export function getStatusFallbackSummary(status: string, isStale = false) {
-  if (isStale) {
-    return "The agent feed has gone quiet — the last snapshot is stale and the agent may be offline.";
+export function getStatusFallbackSummary(status: string, presence: AgentPresence = "online") {
+  if (presence === "offline") {
+    return "The local machine is not heartbeating right now. The last visible task state may no longer be current.";
+  }
+
+  if (presence === "stale") {
+    return "Heartbeat is late. The agent may still be running, but the public snapshot could already be outdated.";
   }
 
   switch (normalizeStatus(status)) {
+    case "offline":
+      return "The local machine is currently unreachable. Treat this as machine-level absence rather than a task failure.";
+    case "stale":
+      return "The last heartbeat is late, so the returned task state may already be stale.";
     case "deployment":
       return "A new build is rolling out. The agent will be back on task once the deployment settles.";
     case "received":
@@ -751,15 +827,22 @@ export function getStatusChipLabel(status?: string | null) {
   const normalized = normalizeStatus(status);
   if (!normalized) return "Unavailable";
 
-  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+  return humanizeStatus(normalized);
 }
 
 export function getEventTypeLabel(type: string) {
-  return type
-    .split(/[-_]/g)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
+  return humanizeStatus(type);
+}
+
+export function formatPresenceLabel(presence?: AgentPresence | null) {
+  switch (normalizePresence(presence)) {
+    case "online":
+      return "Online";
+    case "stale":
+      return "Stale";
+    case "offline":
+      return "Offline";
+  }
 }
 
 function shouldUseLocalAgentMocks() {
@@ -786,6 +869,8 @@ function getLocalMockResponse<T>(url: string): Promise<T> {
       meta: {
         deploymentFingerprint: frame.fingerprint,
       },
+      presence: frame.current.presence,
+      lastSeenAt: frame.current.lastSeenAt,
     } as T);
   }
 
@@ -794,7 +879,7 @@ function getLocalMockResponse<T>(url: string): Promise<T> {
 
 function getLocalMockFrame() {
   const elapsed = Math.max(Date.now() - MOCK_AGENT_SEED_AT, 0);
-  const intervalIndex = Math.floor(elapsed / AGENT_STATUS_POLL_INTERVAL_MS);
+  const intervalIndex = Math.floor(elapsed / AGENT_STATUS_CURRENT_POLL_INTERVAL_MS);
   const frameIndex = intervalIndex % mockFrames.length;
   const activeFrame = mockFrames[frameIndex];
   const cumulativeEvents = mockFrames
@@ -805,4 +890,12 @@ function getLocalMockFrame() {
     ...activeFrame,
     events: cumulativeEvents,
   };
+}
+
+function humanizeStatus(value: string) {
+  return value
+    .split(/[-_]/g)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }

@@ -6,6 +6,7 @@ import type { AgentFeedSnapshot } from "@/lib/agent-status";
 import {
   formatDuration,
   formatLocalTimestamp,
+  formatPresenceLabel,
   formatTaskTypeLabel,
   getEventTone,
   getStatusChipLabel,
@@ -27,6 +28,16 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
   const [viewportHeight, setViewportHeight] = useState(0);
   const [itemHeights, setItemHeights] = useState<Record<string, number>>({});
   const [recentlyAddedIds, setRecentlyAddedIds] = useState<string[]>([]);
+  const hasPresenceSnapshot = Boolean(feed.current.data || feed.events.data);
+  const timelinePresence = hasPresenceSnapshot ? formatPresenceLabel(feed.derived.presence) : "Waiting";
+  const timelineNotice =
+    feed.derived.presence === "stale"
+      ? "Heartbeat is delayed. This timeline is only a recent public window and may already be behind the live machine."
+      : feed.derived.presence === "offline"
+        ? "The local agent is offline. This timeline remains available as a recent window, not a cumulative history."
+        : feed.events.stale
+          ? "Recent activity is waiting on a fresh fetch. Showing the latest cached public window for now."
+          : null;
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -136,13 +147,13 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
         </div>
         <div className="agent-stream-live">
           <span className="agent-stream-live__dot" />
-          <span>Live</span>
+          <span>{timelinePresence}</span>
         </div>
       </div>
 
-      {feed.events.stale ? (
+      {timelineNotice ? (
         <p className="mt-5 rounded-2xl border border-[color:var(--line)] bg-[color:var(--surface)]/70 px-4 py-3 text-sm text-[color:var(--muted)]">
-          Recent activity is waiting on a fresh update. Showing the latest public window for now.
+          {timelineNotice}
         </p>
       ) : null}
 

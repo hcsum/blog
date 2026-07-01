@@ -1,46 +1,39 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import type { AgentFeedSnapshot } from "@/lib/agent-status";
-import { formatLocalTimestamp } from "@/lib/agent-status";
+import { formatLocalTimestamp, formatPresenceLabel } from "@/lib/agent-status";
 
 type AgentStatusPanelProps = {
   feed: AgentFeedSnapshot;
 };
 
-const AGENT_STARTED_AT = "2026-05-27T00:00:00+07:00";
-
 export default function AgentStatusPanel({ feed }: AgentStatusPanelProps) {
-  const [now, setNow] = useState(() => Date.now());
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setNow(Date.now());
-    }, 1000);
-
-    return () => {
-      window.clearInterval(timer);
-    };
-  }, []);
-
-  const lastDeployment = useMemo(() => {
-    return feed.derived.eventsNewestFirst.find((event) => event.type === "deployment")?.ts ?? null;
-  }, [feed.derived.eventsNewestFirst]);
+  const hasPresenceSnapshot = Boolean(feed.current.data || feed.events.data);
   const tasksHandled = feed.current.data?.stats?.tasksHandled;
+  const tasksCompleted = feed.current.data?.stats?.tasksCompleted;
+  const tasksFailed = feed.current.data?.stats?.tasksFailed;
 
   const stats = [
     {
-      label: "Last deployed",
-      value: formatLocalTimestamp(lastDeployment ?? feed.derived.displayTime),
-      compactValue: true,
+      label: "Presence",
+      value: hasPresenceSnapshot ? formatPresenceLabel(feed.derived.presence) : "Waiting",
     },
     {
-      label: "Uptime",
-      value: formatUptime(now),
+      label: "Last heartbeat",
+      value: formatLocalTimestamp(feed.derived.lastSeenAt),
+      compactValue: true,
     },
     {
       label: "Tasks handled",
       value: tasksHandled != null ? String(tasksHandled) : "Waiting",
+    },
+    {
+      label: "Completed / Failed",
+      value:
+        tasksCompleted != null || tasksFailed != null
+          ? `${tasksCompleted ?? 0} / ${tasksFailed ?? 0}`
+          : "Waiting",
+      compactValue: true,
     },
   ];
 
@@ -65,20 +58,4 @@ export default function AgentStatusPanel({ feed }: AgentStatusPanelProps) {
       ))}
     </section>
   );
-}
-
-function formatUptime(now: number) {
-  const startedAt = new Date(AGENT_STARTED_AT).getTime();
-  const diff = Math.max(now - startedAt, 0);
-  const totalSeconds = Math.floor(diff / 1000);
-  const days = Math.floor(totalSeconds / 86_400);
-  const hours = Math.floor((totalSeconds % 86_400) / 3_600);
-  const minutes = Math.floor((totalSeconds % 3_600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (days > 0) {
-    return `${days}d ${hours}h ${minutes}m`;
-  }
-
-  return `${hours}h ${minutes}m ${seconds}s`;
 }
