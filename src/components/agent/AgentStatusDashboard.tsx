@@ -14,11 +14,12 @@ export default function AgentStatusDashboard() {
       <div className="mx-auto max-w-7xl px-5 py-8 md:py-10">
         <header className="agent-intro max-w-3xl">
           <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
-            This shows the live status of my AI agent running on the cloud. I
-            interact with it through a Gmail bridge. I send it tasks and it
-            picks them up. It also does periodical tasks like sending me morning
-            reports containing updates on my favorite websites. The event stream
-            below is a public window into its recent activity.
+            This page reads from the public status surface for my AI agent. I
+            interact with it through a Gmail bridge, and the live card below is
+            mirrored from a public Workers endpoint rather than the local
+            machine itself. It also runs scheduled tasks like sending me morning
+            reports with updates from my favorite websites. The event stream is
+            only a recent public window into that activity.
           </p>
           <a
             className="agent-intro__link mt-6"

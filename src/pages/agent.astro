@@ -6,7 +6,7 @@ import AgentStatusFallback from "@/components/agent/AgentStatusFallback.astro";
 
 <BaseLayout
   title="Agent Status | Haochen Xu"
-  description="A public status panel for the live agent, showing its current state, recent activity, and live visual identity."
+  description="A public status panel backed by the agent's Workers status surface, showing current state and recent activity."
 >
   <AgentStatusDashboard client:only="react">
     <AgentStatusFallback slot="fallback" />
