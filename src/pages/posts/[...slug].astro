@@ -17,9 +17,15 @@ const meta = getPostMeta(post);
 const { Content, headings } = await render(post);
 const isBilingual = post.data.bilingual ?? false;
 const defaultLang = post.data.defaultLang ?? "en";
+const titleZh = post.data.titleZh ?? meta.title;
+const titleEn = post.data.titleEn ?? meta.title;
+const descriptionZh = post.data.descriptionZh ?? meta.description;
+const descriptionEn = post.data.descriptionEn ?? meta.description;
+const pageTitle = defaultLang === "zh" ? titleZh : titleEn;
+const pageDescription = defaultLang === "zh" ? descriptionZh : descriptionEn;
 ---
 
-<BaseLayout title={`${meta.title} | Haochen Xu`} description={meta.description}>
+<BaseLayout title={`${pageTitle} | Haochen Xu`} description={pageDescription}>
   <article class="mx-auto max-w-6xl px-5 py-14">
     <a class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--accent)]" href="/posts/">
       <span aria-hidden="true">←</span>
@@ -32,8 +38,20 @@ const defaultLang = post.data.defaultLang ?? "en";
         {meta.publishedAt && <time datetime={meta.publishedAt.toISOString()}>{formatDate(meta.publishedAt)}</time>}
         <span>{meta.readingTime} min read</span>
       </div>
-      <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">{meta.title}</h1>
-      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">{meta.description}</p>
+      <h1
+        class="text-4xl font-semibold leading-tight tracking-tight md:text-6xl"
+        data-page-title-zh={isBilingual ? titleZh : undefined}
+        data-page-title-en={isBilingual ? titleEn : undefined}
+      >
+        {pageTitle}
+      </h1>
+      <p
+        class="mt-5 text-lg leading-8 text-[color:var(--muted)]"
+        data-page-description-zh={isBilingual ? descriptionZh : undefined}
+        data-page-description-en={isBilingual ? descriptionEn : undefined}
+      >
+        {pageDescription}
+      </p>
     </header>
 
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
@@ -63,7 +81,7 @@ const defaultLang = post.data.defaultLang ?? "en";
           <Content />
         </div>
       </div>
-      <TableOfContents headings={headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)} />
+      {!isBilingual && <TableOfContents headings={headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)} />}
     </div>
   </article>
 </BaseLayout>
@@ -86,10 +104,32 @@ const defaultLang = post.data.defaultLang ?? "en";
       const root = document.querySelector("[data-bilingual-root]");
       const buttons = Array.from(document.querySelectorAll("[data-lang-choice]"));
       const storageKey = `post-language:${postId}`;
+      const titleNode = document.querySelector("[data-page-title-zh]");
+      const descriptionNode = document.querySelector("[data-page-description-zh]");
 
       if (root && buttons.length > 0) {
         const applyLanguage = (lang) => {
           root.setAttribute("data-post-lang", lang);
+
+          if (titleNode) {
+            const nextTitle =
+              lang === "zh" ? titleNode.getAttribute("data-page-title-zh") : titleNode.getAttribute("data-page-title-en");
+            if (nextTitle) {
+              titleNode.textContent = nextTitle;
+              document.title = `${nextTitle} | Haochen Xu`;
+            }
+          }
+
+          if (descriptionNode) {
+            const nextDescription =
+              lang === "zh"
+                ? descriptionNode.getAttribute("data-page-description-zh")
+                : descriptionNode.getAttribute("data-page-description-en");
+            if (nextDescription) {
+              descriptionNode.textContent = nextDescription;
+            }
+          }
+
           buttons.forEach((button) => {
             const active = button.getAttribute("data-lang-choice") === lang;
             button.setAttribute("data-active", active ? "true" : "false");
