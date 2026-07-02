@@ -15,6 +15,8 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const meta = getPostMeta(post);
 const { Content, headings } = await render(post);
+const isBilingual = post.data.bilingual ?? false;
+const defaultLang = post.data.defaultLang ?? "en";
 ---
 
 <BaseLayout title={`${meta.title} | Haochen Xu`} description={meta.description}>
@@ -36,7 +38,28 @@ const { Content, headings } = await render(post);
 
     <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
       <div class="glass-panel rounded-[2rem] p-6 md:p-10">
-        <div class="prose prose-lg">
+        {isBilingual && (
+          <div class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--surface)] px-4 py-3">
+            <p class="text-sm text-[color:var(--muted)]">Language / 语言</p>
+            <div class="inline-flex items-center gap-1 rounded-full border border-[color:var(--line)] p-1" data-language-toggle>
+              <button
+                class="rounded-full px-3 py-1.5 text-sm font-medium text-[color:var(--muted)] transition"
+                data-lang-choice="zh"
+                type="button"
+              >
+                中文
+              </button>
+              <button
+                class="rounded-full px-3 py-1.5 text-sm font-medium text-[color:var(--muted)] transition"
+                data-lang-choice="en"
+                type="button"
+              >
+                EN
+              </button>
+            </div>
+          </div>
+        )}
+        <div class="prose prose-lg" data-bilingual-root={isBilingual ? "true" : undefined} data-post-lang={defaultLang}>
           <Content />
         </div>
       </div>
@@ -44,3 +67,49 @@ const { Content, headings } = await render(post);
     </div>
   </article>
 </BaseLayout>
+
+{isBilingual && (
+  <>
+    <style>
+      [data-bilingual-root][data-post-lang="zh"] [data-lang="en"],
+      [data-bilingual-root][data-post-lang="en"] [data-lang="zh"] {
+        display: none;
+      }
+
+      [data-language-toggle] [data-lang-choice][data-active="true"] {
+        background: var(--accent);
+        color: var(--surface-strong);
+      }
+    </style>
+
+    <script is:inline define:vars={{ defaultLang, postId: post.id }}>
+      const root = document.querySelector("[data-bilingual-root]");
+      const buttons = Array.from(document.querySelectorAll("[data-lang-choice]"));
+      const storageKey = `post-language:${postId}`;
+
+      if (root && buttons.length > 0) {
+        const applyLanguage = (lang) => {
+          root.setAttribute("data-post-lang", lang);
+          buttons.forEach((button) => {
+            const active = button.getAttribute("data-lang-choice") === lang;
+            button.setAttribute("data-active", active ? "true" : "false");
+            button.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+          window.localStorage.setItem(storageKey, lang);
+        };
+
+        const savedLang = window.localStorage.getItem(storageKey);
+        applyLanguage(savedLang === "zh" || savedLang === "en" ? savedLang : defaultLang);
+
+        buttons.forEach((button) => {
+          button.addEventListener("click", () => {
+            const lang = button.getAttribute("data-lang-choice");
+            if (lang === "zh" || lang === "en") {
+              applyLanguage(lang);
+            }
+          });
+        });
+      }
+    </script>
+  </>
+)}

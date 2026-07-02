@@ -1,189 +1,213 @@
 ---
-title: "OpenCode Agent Memory — Design Note"
-description: "Design and implementation note for the long-term memory feature of a personal OpenCode agent: file-and-protocol storage, eager index recall, auto-capture, and LLM compaction."
-date: 2026-06-06
-tags: ["Agent", "OpenCode", "LLM", "Design"]
+title: "我为什么给 agent 加了 memory，最后又把它删了 / Why I Added Memory to My Agent and Then Removed It"
+description: "A bilingual engineering postmortem on building, tightening, and ultimately disabling long-term memory in my OpenCode agent."
+date: 2026-07-01
+tags: ["Agent", "OpenCode", "Memory", "LLM", "Postmortem"]
+bilingual: true
+defaultLang: "zh"
 draft: false
 ---
 
-# OpenCode Agent Memory — Design Note
+## TL;DR / TL;DR
 
-Design + implementation note for long-term memory in a personal assistant built on [OpenCode](https://opencode.ai/). Single user, file-based, git-backed. No vector store, no external service. All integration is through OpenCode's own plugin/SDK surface.
+<div data-lang="zh">
+  <p>我给自己的 OpenCode agent 做过一整套长期记忆：先是文件式 memory，后来切到 mem0 + Qdrant，再后来把抽取逻辑整个收回自己控制，最后还是把它默认关掉了。</p>
+  <p>原因并不复杂：自动 memory 最大的问题不是“能不能记住”，而是“记住的东西值不值得信”。当一个系统会稳定地记住一些低价值、半正确、难审计的东西时，它带来的不是 continuity，而是新的维护负担。最后我决定回到更朴素的方案：重要信息显式写进 <code>notes/</code>，让 notes 做 truth，而不是让一个不透明的自动记忆层做 truth。</p>
+</div>
 
-Scope: the OpenCode interactive client path only. The Gmail bridge path can reuse the same files later but is out of scope here.
+<div data-lang="en">
+  <p>I built a full long-term memory system for my OpenCode agent: first a file-based version, then a mem0 + Qdrant version, then a stricter version where I owned extraction myself. In the end, I turned the whole thing off by default.</p>
+  <p>The reason was simple: the hardest part of automatic memory is not recall, but truth quality. Once a system reliably stores low-value, half-correct, hard-to-audit facts, it stops being continuity and starts being maintenance overhead. I eventually went back to a simpler rule: if something matters, write it explicitly into <code>notes/</code>. Notes should be the truth layer, not an opaque auto-memory pipeline.</p>
+</div>
 
-## Model
+## Timeline / 时间线
 
-Memory = **markdown files + a write protocol + an always-loaded index**. Two requirements from the platform: (a) inject the index into context every session, (b) give the model a writing protocol. OpenCode provides both natively, so there is no bespoke storage engine.
-
-Storage choice is file-based by default for a single user with a small store; the design effort is in capture and maintenance, not storage.
-
-Trade-off accepted: no semantic recall and an index that grows linearly with the number of facts. In exchange the store is transparent, hand-editable, git-diffable, reuses the existing `notes` sync, and needs no extra service or schema. At single-user scale the linear index is cheap (one line per fact); a vector store would buy semantic match at the cost of an embedding pipeline, a query step, and opaque state — not worth it until the store is large.
-
-## Storage layout
-
-```
-notes/memory/
-  MEMORY.md            # index, auto-generated, injected every session
-  <type>-<name>.md     # one fact per file
-  _CONFLICTS.md        # unresolved contradictions (only when present)
-.opencode/memory/PROTOCOL.md     # write protocol (main repo, versioned w/ code)
-.opencode/plugin/memory.ts       # capture + maintenance plugin (main repo)
-.data/memory-extract-watermark.json   # per-session extraction watermark (gitignored)
-.data/memory-compact-state.json       # churn / last-attempt / last-compacted (gitignored)
-```
-
-Data lives in the `notes` repo (persisted, synced across machines). Protocol and code live in the main repo (versioned with the feature).
-
-Memory file format:
-
-```markdown
----
-name: <kebab-slug>
-description: <one-line recall hook>
-metadata:
-  type: user | feedback | project | reference
----
-
-<the fact. For feedback/project, add a "Why:" line. Link related memories with [[name]].>
-```
-
-Index line format: `- [Title](file.md) — hook`.
-
-Taxonomy: `user` (identity, stable preferences, accounts, tools), `feedback` (a correction or confirmed way of working, with the why), `project` (ongoing goal/constraint not derivable from the repo), `reference` (pointer to an external resource).
-
-## Recall — eager index, lazy bodies
-
-`opencode.json`:
-
-```json
-"instructions": [".opencode/memory/PROTOCOL.md", "notes/memory/MEMORY.md"]
-```
-
-`config.instructions` loads its files into context at every session start. So the protocol + full index are always present; bodies are read on demand when an index line looks relevant. Zero code.
-
-Decision — index is eager, not fetched on demand. Grep-on-demand was rejected: the agent only searches once it suspects a memory exists, but it can't suspect what isn't in view. That keeps explicit recall ("what's my email?") and loses implicit recall (applying a known preference unprompted), which is the valuable part. Eager index + lazy bodies is the split that keeps the cheap layer (one line/fact, ~15–25 tokens) in context and defers the expensive layer.
-
-Decision — inject the index only, not the bodies. Injecting the top-N relevant bodies up front (via `experimental.chat.system.transform`) would improve recall precision, but it depends on an experimental hook and a relevance ranker. The current bet is that an always-present index + on-demand `read` is good enough while the store is small. Trade-off: recall of a body still relies on the model choosing to expand the right index line; a poorly-written `description` hook can be missed.
-
-Compromise: the index is injected every session, so its cost is fixed-per-session and monotonically growing — there is no automatic reclaim. Acceptable while small. Growth path when it gets large: a `chat.message` hook that greps per user message and injects only matching entries (keeps recall automatic, drops the fixed cost, at the price of keyword-vs-semantic match quality). Deferred until it hurts.
-
-## Capture
-
-Goal: true auto-capture — record durable facts the user never explicitly asked to keep, not just the ones flagged with "remember". Four candidate triggers were weighed:
-
-| Mechanism | How | Truly auto | Cost | Decision |
-|---|---|---|---|---|
-| explicit "remember" | user says it, model writes | no (manual) | 0 | folded into keyword save |
-| model self-records mid-turn | protocol nudges the model to write as it goes | half (unreliable) | 0 | cut — flaky, redundant once extraction exists |
-| background extraction | mine new messages after idle | yes | ~1 cheap LLM call per paused round | main |
-| keyword force-save | regex → forced save instruction | instant top-up | 0 | kept |
-
-Chosen: background extraction as the workhorse + keyword force-save for instant needs. This is more automatic than the implementations surveyed (keyword-only or hand-curated), and the price is explicit:
-
-- **Noise.** Auto-capture will occasionally save something irrelevant. Mitigated by a high bar in the protocol, deduping against existing bodies, and compaction. This is the main cost of going past keyword-only.
-- **Latency.** Background capture lands ~1 debounce window after the user pauses, not instantly — hence keyword force-save as the instant path.
-- **Per-round LLM cost.** One cheap model call per paused round (not per turn — see debounce). Bounded, but non-zero, so the model defaults to a cheap one.
-
-Two mechanisms ship, both in `memory.ts`.
-
-### Background extraction (`session.idle`, debounced)
-
-`session.idle` fires every turn. The plugin debounces (default 60s); extraction runs once the user actually pauses.
-
-Per run:
-
-1. Read messages since the per-session watermark (`.data/memory-extract-watermark.json`). Incremental; transcript is bounded (`MAX_NEW_MESSAGES=40`, `MAX_TRANSCRIPT_CHARS=24000`).
-2. Send new messages + existing memory bodies (capped at `MAX_EXTRACT_CONTEXT_CHARS=12000`, index fallback) to a cheap model with the protocol's bar.
-3. Model returns a JSON array of `{action, type, name, description, body}`.
-4. Write to `notes/memory/*.md`, rebuild the index, advance the watermark, bump churn.
-
-The model is called via `ctx.client`: create a temporary session, prompt a small model, read the result, delete the session. Reuses OpenCode's configured provider — no extra API key. Internal sessions are tracked so their own `session.idle` events don't recurse into more extraction.
-
-`session.deleted` triggers a best-effort final extraction so the debounce window doesn't drop the last round.
-
-Design notes / trade-offs:
-
-- Debounce length trades cost against loss risk: longer = fewer LLM calls but a bigger window to lose if the process dies mid-window. Mitigated by the watermark (the next session resumes from where it left off) and the `session.deleted` flush.
-- Incremental watermark bounds tokens. If the watermark message can't be found (e.g. truncated history), it falls back to the last `MAX_NEW_MESSAGES` rather than re-reading everything — bounded, at the risk of skipping older unmined messages.
-- Reusing OpenCode's provider via `ctx.client` avoids a second API key and infra, but ties extraction quality to whatever cheap model that provider offers.
-
-### Keyword force-save (`chat.message`)
-
-For "save this now". A regex (`记住 / remember / save this / don't forget`, code blocks stripped first) matches the user message and injects a synthetic instruction telling the model to persist immediately per the protocol. Instant; covers the latency gap of background extraction.
-
-## Maintenance
-
-### Layer A — index rebuild (deterministic, no LLM)
-
-`MEMORY.md` is regenerated from file frontmatter on every maintenance pass. Files are the source of truth; the index is a pure derivative and is never hand-edited, so index↔body drift can't accumulate.
-
-### Layer B — compaction (LLM)
-
-Triggers: write **churn** ≥ `MEMORY_COMPACT_CHURN` (default 8) since last pass, OR wall-clock **interval** ≥ `MEMORY_COMPACT_INTERVAL_MS` (default 12h). A polling timer (`MEMORY_COMPACT_POLL_MS`, clamped ≥60s) checks the interval. Runs only with ≥ `MEMORY_COMPACT_MIN_ENTRIES` files.
-
-Why both triggers: churn alone would never fire on a store that's read often but rarely written; the interval guarantees a floor. The interval alone would let a high-write burst pile up duplicates between passes; churn cleans those up promptly. Trade-off: the interval means a compaction can run on an otherwise idle machine, and the first run after a restart fires eagerly (no recorded last-pass).
-
-A cheap model reads the whole store and returns a reconciliation plan of ops:
-
-- `merge` near-duplicate files into one, delete the sources
-- `delete` clearly stale / superseded entries
-- `rewrite` one entry in place
-- `flag` a genuine contradiction
-
-Bias: conservative. The store is the assistant's durable knowledge; a wrong merge or delete loses real information, while leaving a duplicate around costs little. So the model is told to prefer keeping over losing, and the apply step is defensive. The deliberate compromise is that the store stays slightly messier than a maximally-aggressive pass would leave it.
-
-Constraints:
-
-- Contradictions are flagged, never auto-resolved. Conflicting facts where the current truth is unknown go to `_CONFLICTS.md` and raise a banner in the index. Both sides are kept. (Picking a side on a guess is the one unrecoverable failure mode, so it's disallowed outright.)
-- A git checkpoint commit is taken in the notes repo before applying ops, so a bad pass is revertable. No git ⇒ no destructive ops (compaction aborts). Trade-off: an environment without git in the notes repo gets index rebuild (Layer A) but no compaction.
-- State (`churn`, `lastAttemptedAt`, `lastCompactedAt`) is persisted so a full compaction isn't re-run on every idle event.
-- Filenames passing destructive ops are validated against a safe pattern.
-- Whole-store single pass (no clustering). Simple and lets the model see every cross-file relationship at once; the cost is a size ceiling (below).
-
-### Models
-
-Both passes default to `openai/gpt-5-mini` (cheap), overridable via `MEMORY_EXTRACT_MODEL` / `MEMORY_COMPACT_MODEL`. Earlier they fell back to the session model (`openai/gpt-5.4`) on every idle pause — wrong for a constantly-running job; fixed.
-
-Extraction `update` previously overwrote a file while the model had only seen the one-line index (blind rewrite, could drop detail). Now the extractor receives full existing bodies and the protocol requires an update body to carry over still-valid content.
-
-## Boundaries
-
-| | Knowledge wiki | Memory | `AGENTS.md` |
-|---|---|---|---|
-| Holds | topic/world knowledge, ingested sources | facts about the user and how to work with them | durable agent behavior rules |
-| Rhythm | explicit ingest/query | auto-accumulating, self-correcting | rarely changes |
-| Test | "knowledge about a topic?" | "about the user / our way of working?" | "permanent behavior rule?" |
-
-A recurring `feedback` memory that stabilizes can be promoted into `AGENTS.md` by hand. Memory never modifies the user's authoritative profile file.
-
-## Config (env)
-
-| Var | Default | Meaning |
+| Date | Commit | Shift |
 |---|---|---|
-| `MEMORY_EXTRACT_ENABLED` | 1 | background extraction on/off (keyword save unaffected) |
-| `MEMORY_EXTRACT_DEBOUNCE_MS` | 60000 | idle debounce before extraction |
-| `MEMORY_EXTRACT_MODEL` | `openai/gpt-5-mini` | extraction model |
-| `MEMORY_COMPACT_ENABLED` | 1 | compaction on/off |
-| `MEMORY_COMPACT_CHURN` | 8 | writes since last pass that trigger compaction |
-| `MEMORY_COMPACT_MIN_ENTRIES` | 2 | min files before compaction runs |
-| `MEMORY_COMPACT_INTERVAL_MS` | 43200000 | force a pass at least this often (12h) |
-| `MEMORY_COMPACT_POLL_MS` | 600000 | interval due-check cadence (clamped ≥60s) |
-| `MEMORY_COMPACT_MODEL` | = extract model | compaction model |
+| 2026-06-06 | `63cb854` | Added the first file-based memory plugin and `PROTOCOL.md` |
+| 2026-06-16 | `63697a4` | Switched long-term memory to mem0 + Qdrant |
+| 2026-06-22 | `6ca24a0` | Stopped using mem0 extraction; owned extraction with `infer:false` |
+| 2026-06-24 | `b903f25` | Added role-grounded gate and `core`/`text` dedup |
+| 2026-06-26 | `da36bf4`, `a5ef9e9` | Disabled extraction and recall by default |
 
-## Deferred by design
+## Starting Simple / 从一个简单版本开始
 
-Cut on purpose, not oversights — revisit when the store grows or a need shows up:
+<div data-lang="zh">
+  <p>最开始那版 memory 其实很朴素。我想要的东西也很朴素：agent 不要每次都从零认识我，不要每次都重新学一遍怎么跟我协作。</p>
+  <p>所以第一版直接走文件方案。每条 memory 一个 markdown 文件，<code>notes/memory/MEMORY.md</code> 做索引，索引在每次会话启动时注入上下文。写入协议放在 <code>.opencode/memory/PROTOCOL.md</code>，自动抽取逻辑放在 <code>.opencode/plugin/memory.ts</code>。</p>
+  <p>这个方案的优点非常明显：可见、可改、可 diff、可 grep。对单用户系统来说，它几乎是最容易信任的一种形态。</p>
+</div>
 
-- Semantic / vector recall (embeddings). Until index recall gets imprecise.
-- Injecting top-N relevant bodies via `experimental.chat.system.transform`. Recall-precision upgrade; depends on an experimental hook.
-- Importance scoring / recency decay / auto-forget. Currently leaning on dedupe + compaction + manual review instead.
-- Custom `memory_save` / `memory_search` tools to harden the write format vs. the model hand-writing frontmatter.
-- Multi-user scope (single user) and Gmail-bridge reuse (same files, not wired yet).
+<div data-lang="en">
+  <p>The first version was intentionally simple. I wanted the agent to stop relearning who I was and how I liked to work every time a new session started.</p>
+  <p>So the first implementation was file-based. Each memory lived in its own markdown file, <code>notes/memory/MEMORY.md</code> was the index, and that index was injected into every new session. The write protocol lived in <code>.opencode/memory/PROTOCOL.md</code>, and automatic extraction lived in <code>.opencode/plugin/memory.ts</code>.</p>
+  <p>The strengths were obvious: everything was visible, editable, diffable, and grep-able. For a single-user system, that is a very trustworthy shape.</p>
+</div>
 
-## Known gaps
+## Why I Switched to mem0 / 为什么我又切到 mem0
 
-- Single-pass compaction has a size ceiling (`MAX_COMPACT_CHARS=60000`); over it the pass is skipped until the next cycle. Needs clustered/batched compaction.
-- No cross-process lock; two OpenCode processes could compact the same dir concurrently.
-- The notes-memory path is duplicated between `opencode.json` `instructions` and the plugin constant. Cleanest fix: move recall injection into the plugin and source the path once.
-- The extraction/compaction system prompts overlap with `PROTOCOL.md` (categories, the high bar, dedupe rules) — drift risk. Single-source fix: read `PROTOCOL.md` at runtime instead of duplicating its rules in code.
+<div data-lang="zh">
+  <p>问题在召回成本。文件式方案本质上是 eager recall：索引会一直跟着上下文走。memory 越多，上下文越大，成本就是 <code>O(n)</code>。</p>
+  <p>到了 6 月中旬，我开始想把召回改成 pull-based：不要把整份记忆塞进每轮对话，而是在需要时按 query 取 top-k。于是我在 <code>63697a4</code> 这个提交里把长期记忆切到 mem0 + Qdrant，把索引常驻注入换成 <code>search_memories</code> 工具。</p>
+  <p>这一步从架构上看是对的。它解决了文件索引会无限膨胀的问题，也让 memory 更像一个检索层，而不是一块不断增长的 prompt。</p>
+</div>
+
+<div data-lang="en">
+  <p>The problem was recall cost. The file-based version was eager recall: the index always traveled with the prompt. As memory grew, context grew with it. The cost was fundamentally <code>O(n)</code>.</p>
+  <p>By mid-June, I wanted pull-based recall instead: do not inject the whole memory store into every conversation, only fetch top-k items when the agent actually needs them. That led to commit <code>63697a4</code>, where I switched long-term memory to mem0 + Qdrant and replaced eager injection with a <code>search_memories</code> tool.</p>
+  <p>Architecturally, this move was correct. It removed the unbounded prompt growth problem and turned memory into a retrieval layer instead of an ever-growing block of context.</p>
+</div>
+
+## The Real Problem Was Extraction / 真正的问题其实是抽取
+
+<div data-lang="zh">
+  <p>切到向量检索之后，我很快发现：召回不是最难的部分，抽取才是。</p>
+  <p>mem0 默认的抽取器是高召回取向的。对于“不要漏掉任何可能有用的东西”这类目标，它很合理；但对于“只记录少量高价值、长期成立、关于用户本人的事实”这种目标，它会记太多。再加上我当时用的是更轻量的模型，它能看到的上下文有限，于是就开始出现各种典型脏写：</p>
+</div>
+
+<div data-lang="en">
+  <p>After the switch to vector retrieval, I realized recall was not the hard part. Extraction was.</p>
+  <p>mem0's default extractor is tuned for high recall. That makes sense if your goal is “do not miss potentially useful facts.” It is much less useful when your target is “store only a small number of durable, high-value facts about the user.” Combined with a lighter model and limited context, the system started producing very recognizable kinds of junk:</p>
+</div>
+
+<div data-lang="zh">
+  <ul>
+    <li>assistant 把 “User wants X” 重新表述一遍，系统就把它当成用户事实存起来</li>
+    <li>研究过程中的发现、一次性的交付总结、临时 debug 状态，被错误地写进长期记忆</li>
+    <li>“以后想做什么”“之后再跟进什么” 这种 open loop，被当成 stable truth</li>
+    <li>同一个事实因为表述略有不同，被存成多条近重复 memory</li>
+  </ul>
+</div>
+
+<div data-lang="en">
+  <ul>
+    <li>The assistant restated “User wants X,” and the system stored that restatement as a user fact</li>
+    <li>Research findings, one-off delivery summaries, and temporary debugging state leaked into long-term memory</li>
+    <li>Open loops such as “I want to do this later” were stored as if they were stable truth</li>
+    <li>The same fact accumulated as multiple near-duplicates because the wording changed slightly</li>
+  </ul>
+</div>
+
+<div data-lang="zh">
+  <p>我后来有个很明确的感受：我并不是在设计一个 memory system，我是在设计一个垃圾过滤器。</p>
+</div>
+
+<div data-lang="en">
+  <p>At some point the feeling became clear: I was no longer designing a memory system. I was designing a garbage filter.</p>
+</div>
+
+## Taking Control Back / 把控制权收回来
+
+<div data-lang="zh">
+  <p>接下来这轮改动，是整条线里技术上最认真的一段。我先尝试过在 mem0 的 prompt 外面继续加 gate、加 regex 清理，但那只是补丁，不是控制权。</p>
+  <p>所以到 <code>6ca24a0</code> 这次提交，我直接停掉了 mem0 自带的 <code>infer:true</code> 抽取器，改成自己写 judge：先检索邻近 memory 做去重上下文，再让 <code>.opencode/lib/mem0-judge.ts</code> 按 <code>EXTRACTION_GATE.md</code> 输出明确的 <code>ADD</code>/<code>UPDATE</code> 决策，最后用 <code>infer:false</code> 落库。换句话说，mem0 从“帮我判断该记什么”降级成“只负责存和搜”。</p>
+  <p>两天后，在 <code>b903f25</code> 里我又把 gate 收紧了一轮，核心规则是下面这几条：</p>
+</div>
+
+<div data-lang="en">
+  <p>The next round was the most serious engineering work in the whole experiment. I first tried adding more gate text and regex cleanup around mem0, but that was patching behavior, not owning it.</p>
+  <p>So in commit <code>6ca24a0</code>, I stopped using mem0's built-in <code>infer:true</code> extractor entirely and wrote my own judge. The flow became: retrieve nearby memories for dedup context, run <code>.opencode/lib/mem0-judge.ts</code> with <code>EXTRACTION_GATE.md</code>, get explicit <code>ADD</code>/<code>UPDATE</code> decisions, then write them with <code>infer:false</code>. In other words, mem0 stopped deciding what mattered and became a storage-and-retrieval layer only.</p>
+  <p>Two days later, in <code>b903f25</code>, I tightened the gate again. The core rules were:</p>
+</div>
+
+<div data-lang="zh">
+  <ul>
+    <li><code>WHO SAID IT</code>：关于用户的 claim 必须有用户自己的发言作证据</li>
+    <li><code>TRUTH, NOT OPEN LOOPS</code>：“想做 / 待跟进 / 之后再看” 是任务，不是真相</li>
+    <li><code>RESEARCH -&gt; wiki</code>：外部研究结论进 wiki，不进 user memory</li>
+    <li><code>core</code> / <code>text</code>：用原子事实做去重 key，用自包含措辞做实际存储</li>
+  </ul>
+</div>
+
+<div data-lang="en">
+  <ul>
+    <li><code>WHO SAID IT</code>: a claim about the user must be grounded in the user's own words</li>
+    <li><code>TRUTH, NOT OPEN LOOPS</code>: “want to do / follow up / revisit later” is a task, not a truth</li>
+    <li><code>RESEARCH -&gt; wiki</code>: external research findings belong in the wiki, not user memory</li>
+    <li><code>core</code> / <code>text</code>: use an atomic fact as the dedup key, and a self-contained phrasing as the stored form</li>
+  </ul>
+</div>
+
+<div data-lang="zh">
+  <p>这些改动确实让质量变好了，但它没有改变一件更底层的事：这套系统仍然在用 LLM 自动决定 truth，而 truth layer 又是一个向量库。它变得更可控了，但没有变得真正让我放心。</p>
+</div>
+
+<div data-lang="en">
+  <p>These changes did improve quality, but they did not change the more fundamental fact: the system was still using an LLM to decide truth, and the truth layer was still a vector store. It became more controlled, but not truly trustworthy.</p>
+</div>
+
+## Why I Removed It Anyway / 为什么最后还是把它关了
+
+<div data-lang="zh">
+  <p>最终让我放弃的原因有三个。</p>
+  <ol>
+    <li><strong>它仍然会记很多不值得记的东西。</strong> 哪怕规则已经很重，只要抽取是自动的、模型上下文又不完整，低价值内容就总会漏进来。更强的模型不一定解决这个问题，很多时候只会把垃圾写得更像正确答案。</li>
+    <li><strong>它很难 audit。</strong> 后来我最在意的不是“能不能搜出来”，而是“这条事实为什么在这里”。在文件式方案里，文件本身就是 truth；在 mem0/Qdrant 方案里，snapshot 只是派生审计面，不是 source of truth。这个差别会直接影响信任感。</li>
+    <li><strong>它开始反过来消耗我的注意力。</strong> 我本来是想让 memory 帮我减少重复劳动，结果越来越多时间花在给 memory 补规则、清垃圾、解释边界、修复误记。到这个阶段，它已经没有在服务产品目标，而是在制造一个新的维护面。</li>
+  </ol>
+  <p>所以 6 月 26 日我把自动抽取和召回都改成 opt-in：<code>MEMORY_EXTRACT_ENABLED</code> 默认关闭，<code>MEMORY_RECALL_ENABLED</code> 默认关闭，agent-facing 的 protocol 和提示也从常驻上下文里撤掉。</p>
+</div>
+
+<div data-lang="en">
+  <p>Three reasons made me shut it down.</p>
+  <ol>
+    <li><strong>It still stored too many things that were not worth storing.</strong> Even with heavy rules, fully automatic extraction plus incomplete model context will keep leaking low-value facts. A stronger model does not necessarily solve this; often it just makes junk sound more convincing.</li>
+    <li><strong>It was hard to audit.</strong> What I cared about most was no longer “can the agent recall this,” but “why is this fact here.” In the file-based version, the file itself was the truth. In the mem0/Qdrant version, the snapshot was only a derived audit surface, not the source of truth. That difference matters a lot for trust.</li>
+    <li><strong>It started consuming my attention instead of saving it.</strong> The whole point of memory was to reduce repetitive work. Instead, I kept spending time tightening rules, cleaning junk, explaining boundaries, and fixing false memories. At that point, the system was no longer serving the product. It had become its own maintenance surface.</li>
+  </ol>
+  <p>So on June 26, I made both extraction and recall opt-in: <code>MEMORY_EXTRACT_ENABLED</code> defaults to off, <code>MEMORY_RECALL_ENABLED</code> defaults to off, and the agent-facing protocol was removed from always-loaded context.</p>
+</div>
+
+## What I Kept / 我保留了什么
+
+<div data-lang="zh">
+  <p>我并不是放弃了“记忆”这件事，我只是放弃了“隐式、自动、不可见的记忆层”。</p>
+  <p>现在我更信任的是几类显式文件：</p>
+  <ul>
+    <li><code>notes/user.md</code>：关于我的稳定画像和长期约束</li>
+    <li><code>notes/todos.md</code>：开环事项和当前推进中的线程</li>
+    <li><code>notes/knowledge/</code>：通过 llm-wiki 沉淀的外部知识和研究结论</li>
+  </ul>
+  <p>这套东西没有那么“自动”，但它有一个非常重要的优点：我知道它为什么存在，也知道要去哪里改它。</p>
+</div>
+
+<div data-lang="en">
+  <p>I did not give up on memory itself. I gave up on an implicit, automatic, mostly invisible memory layer.</p>
+  <p>What I trust now is a set of explicit files:</p>
+  <ul>
+    <li><code>notes/user.md</code> for durable facts and long-term constraints about me</li>
+    <li><code>notes/todos.md</code> for open loops and active workstreams</li>
+    <li><code>notes/knowledge/</code> for external knowledge and research captured through the llm-wiki flow</li>
+  </ul>
+  <p>It is less magical, but it has one major advantage: I know why it exists, and I know exactly where to edit it.</p>
+</div>
+
+## What I’d Do Differently Next Time / 如果以后再做，我会怎么做
+
+<div data-lang="zh">
+  <ol>
+    <li><strong>让可审计的形式做 truth。</strong> 如果最后还是要靠 snapshot 来解释系统在干什么，那说明 truth layer 放错地方了。</li>
+    <li><strong>让 LLM 提建议，不让它拥有真相。</strong> 模型可以负责提取候选项、打标签、做排序，但最终的 durable record 应该落在更容易审计的介质上。</li>
+    <li><strong>先从显式 memory 出发，再决定哪些值得自动化。</strong> 自动化应该建立在一个已经可信的手工流程之上，而不是反过来要求规则去拯救一个不可信的自动流程。</li>
+  </ol>
+</div>
+
+<div data-lang="en">
+  <ol>
+    <li><strong>Make the auditable form the source of truth.</strong> If you need a derived snapshot to explain what the system is doing, your truth layer is probably in the wrong place.</li>
+    <li><strong>Let the LLM propose, not own reality.</strong> The model can extract candidates, label them, or rank them. The durable record should still live in something easier to inspect.</li>
+    <li><strong>Start from explicit memory, then decide what is worth automating.</strong> Automation should sit on top of an already trustworthy manual workflow, not the other way around.</li>
+  </ol>
+</div>
+
+## Closing / 结尾
+
+<div data-lang="zh">
+  <p>这段尝试对我来说并不算失败。它让我更清楚一件事：agent memory 真正难的不是“存”和“搜”，而是“什么才配被长期记住”。如果这个问题没有被解决，memory 只会把噪音持久化。</p>
+  <p>所以至少在现在，我更愿意让 agent 依赖显式 notes，而不是依赖一个自动、隐式、向量库驱动的记忆层。</p>
+</div>
+
+<div data-lang="en">
+  <p>I do not consider this experiment a failure. It clarified the real problem: the hard part of agent memory is not storing or retrieving, but deciding what deserves to persist. If that part is weak, memory just turns noise into durable state.</p>
+  <p>So for now, I would rather have my agent rely on explicit notes than on an automatic, implicit, vector-database-backed memory layer.</p>
+</div>
