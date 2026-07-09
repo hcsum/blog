@@ -255,7 +255,7 @@ export default function AgentCoreVisual({
       }
 
       position.needsUpdate = true;
-      coreGeometry.computeVertexNormals();
+      if (!isMobile) coreGeometry.computeVertexNormals();
 
       root.rotation.y += reducedMotion ? 0.0016 : state.ringSpeed * 0.01;
       root.rotation.z = Math.sin(elapsed * 0.22) * 0.16;

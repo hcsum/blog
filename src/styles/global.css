@@ -786,6 +786,7 @@ a {
   .agent-core-halo {
     width: 15rem;
     height: 15rem;
+    filter: blur(32px);
   }
 
   .agent-core-ring {
