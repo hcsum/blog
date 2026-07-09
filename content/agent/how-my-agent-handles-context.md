@@ -1,10 +1,18 @@
 ---
 title: "我的 personal agent 怎么管上下文：把 context 当易耗品，把记忆当资产"
 description: "从一句 AGENTS.md 出发，讲我这个常驻个人 agent 是怎么分层管理记忆与上下文的：极小的常驻层 + 渐进式披露 + skill routing，让我可以放心地『做完就走、随手开新 session』。"
+titleZh: "我的 personal agent 怎么管上下文：把 context 当易耗品，把记忆当资产"
+titleEn: "How My Personal Agent Handles Context: Treat Context as Disposable, Memory as an Asset"
+descriptionZh: "从一句 AGENTS.md 出发，讲我这个常驻个人 agent 是怎么分层管理记忆与上下文的：极小的常驻层 + 渐进式披露 + skill routing，让我可以放心地『做完就走、随手开新 session』。"
+descriptionEn: "Starting from a single line in AGENTS.md, here's how my always-on personal agent layers memory and context: a tiny always-loaded core, progressive disclosure, and skill routing — so I can finish a task, close the session, and start a fresh one without a second thought."
 date: 2026-07-09
 tags: ["Agent", "OpenCode", "Context", "Memory", "Progressive Disclosure"]
+bilingual: true
+defaultLang: "zh"
 draft: false
 ---
+
+<div data-lang="zh">
 
 # 把 context 当易耗品，把记忆当资产
 
@@ -146,3 +154,150 @@ draft: false
 - 于是「做完就走、随手开新 session」变成一件没有心理负担的事——因为下一个 session 关心的一切，都在磁盘上等着被重新水合。
 
 这只是我目前的写法，不是标准答案。但「把 context 和 memory 当成两种东西来管」这个判断，我觉得会一直成立。
+
+</div>
+
+<div data-lang="en">
+
+# Treat Context as Disposable, Memory as an Asset
+
+## TL;DR
+
+I run an always-on personal agent for myself. After using it for a while, I've settled on a pretty plain principle: **context is disposable, memory is the asset, and the two should be managed separately.**
+
+In practice, that leads to something counterintuitive: **I'd rather finish a task, close the session, and spin up a fresh one than stay parked in the same long conversation.** This post is about why I do that, and what layers of note structure and prompting I built so that "finish and leave" doesn't cost me continuity.
+
+## Why I'd Rather Start a New Session
+
+Two very practical reasons:
+
+1. **It's expensive — even with caching.** I don't spend much on subscriptions (around $40 a month). Someone will point out that modern LLMs have prompt caching, so re-reading old conversations is cheap — true, but caching doesn't make a long context free. A cache hit still bills you for the tokens of the entire context, just at a lower unit price. The cache also has a short TTL (on the order of minutes), so any pause means re-feeding the whole thing at full price. And context only ever grows — every extra turn makes the block you keep dragging along even bigger. Caching lowers the unit price; it doesn't remove the fact that "the longer the context, the more there is to chew through on every turn."
+2. **It gets dumber.** More importantly, the longer the context, the less focused the agent becomes, and the more easily it gets pulled off track by irrelevant earlier content. A long context is not free memory — it's a burden that dilutes attention.
+
+So I don't use a long session as memory. Task done, session closed; next thing, new session.
+
+That sounds glib, but it has a precondition: **if memory lives inside the conversation, then closing the session is amnesia.** So the real problem to solve is moving memory out of the conversation and into somewhere that survives a closed session.
+
+## Where Memory Lands: Disk, Not the Conversation
+
+My answer is a separate private git repo, `notes/`. It's the **single source of truth** for this agent's memory: todos, my profile, operational facts, and an entire knowledge wiki — all markdown on disk, none of it inside any one conversation.
+
+There's another reason I increasingly value for choosing disk over conversation, and explicit markdown over a vector store: **it's auditable.** Once memory lands on disk as human-readable plain text, I can open it any time and see exactly what it recorded, which entry is wrong, and when it changed (git keeps the full trail). The biggest hazard of automatic memory was never "failing to remember" — it's that it reliably remembers low-value, half-correct, and invisible things, and when something goes wrong you have no idea which dirty memory just pulled the agent off course. For an agent that makes judgment calls on my behalf over the long term, "I can inspect and correct its memory with my own eyes" matters far more than "how clever the memory is."
+
+> As an aside: I actually did build a whole automatic-memory system once — first file-based memory, then a mem0 + Qdrant vector store. In the end I turned it off by default and went back to "write the important stuff explicitly into `notes/`." I wrote a separate postmortem on that whole arc: [Why I Added Memory to My Agent and Then Removed It](/posts/agent/building-memory-for-our-opencode-agent/). The one-line takeaway: **better to let a `notes/` I can read and audit be the source of truth than an opaque automatic layer.**
+
+When a new session starts, the agent doesn't rely on "remembering what was said last time" — it **re-hydrates from disk**. That turns the problem into: how does a freshly opened session that remembers nothing quickly learn "who it is, who I am, what to do now, and where to look when it needs to" — without stuffing the whole repo into context?
+
+That's what the layering is for.
+
+## It All Starts With One Line in `AGENTS.md`
+
+The entry point is `AGENTS.md` at the repo root (I run on both OpenCode and Claude Code; the latter reads `CLAUDE.md`, with essentially the same content). It's the system prompt loaded into every session. Two decisive lines live in it:
+
+```markdown
+## About the user
+
+@notes/user.md
+@notes/todos.md
+```
+
+This `@` syntax **inlines the full text** of these two files into the system prompt. Which means, no matter how many new sessions I open, the following two things are **always resident** in context:
+
+- `notes/user.md` — my profile: north-star goals, real-world constraints, my shortcomings, and a "don't let me do this" list.
+- `notes/todos.md` — all of my todos.
+
+Because this agent is positioned as a personal assistant, "who I am" and "what I'm chasing" are the bedrock for any judgment it makes — so these two are worth paying the fixed cost of "inject every time."
+
+**Beyond that, almost nothing is resident; instead, the pointer is resident and the content is on-demand.** This is progressive disclosure.
+
+## Let the Structure Describe Itself: Don't Let Paths in the Prompt Go Stale
+
+Here's a point I got very careful about after getting burned: **the root prompt should avoid hardcoding the directory structure inside `notes/`.**
+
+The reason is simple — structure changes. If I write every layer's path and every subdirectory's purpose into `AGENTS.md`, then every time I reorganize the notes repo I have to come back and edit that root prompt. The two drift apart fast, the paths in the prompt start to rot (go stale), and the agent keeps hunting for things using an outdated map.
+
+My approach: the root prompt does exactly one thing — **point at the notes repo** — and then hands "how this repo is actually organized" to the repo itself. `notes/` carries its own `AGENTS.md` (and matching `CLAUDE.md`), which uses a `## Layout` section to explain layer by layer what each directory is for, who maintains it, and how to change it. **That document is the single source of truth for the structure** — it lives alongside the structure it describes, and the agent naturally reads it when it actually goes into `notes/` to work.
+
+The payoff: to reorganize the structure, I only edit that one place — and editing the structure updates its description in the same breath. The root prompt doesn't change a single character, so it can't go stale. This is really an extension of the same progressive-disclosure principle: **the upper layer holds only "where to look," and the concrete, volatile details stay in the layer closest to them, maintained in place.**
+
+## Layer One: Separate "Memory About the Agent" From "Memory About Me"
+
+A personal agent runs into all sorts of things worth "writing down," but they belong in completely different places. I split them into physically separate layers, and use a **routing rule** in `AGENTS.md` to tell the agent where each kind of content goes:
+
+| Layer               | Who it's about                               | Who maintains it   | Resident? |
+| ------------------- | -------------------------------------------- | ------------------ | --------- |
+| `notes/user.md`     | About **me** (profile / goals / weaknesses)  | Me, agent can't edit | ✅ Resident |
+| `notes/memory/`     | Operational facts **the agent itself** needs across sessions | `remember` skill | ❌ On-demand |
+| `notes/brain-dump/` | Verbatim content I want to keep and reread later | `brain-dump` skill | ❌ On-demand |
+| `notes/knowledge/`  | Knowledge about the **outside world**        | `llm-wiki` skill   | ❌ On-demand |
+
+The routing section in `AGENTS.md` looks like this (excerpt):
+
+```markdown
+## Handling content
+
+- brain-dump skill — verbatim content I want to keep for myself → notes/brain-dump/
+- remember skill — operational context the agent itself needs across sessions → notes/memory/
+- llm-wiki skill — external / world knowledge, ingest and query
+```
+
+The point of this split: **"facts about me" and "operational details the agent needs for itself" are two different things.** The former is my maintained, stable identity (like my goals), and the agent only reads it; the latter is the agent's own scratch memory accumulated during collaboration (like "the SSH command to log into that Raspberry Pi" or "which months a given data source covers") — one topic file each, written by the `remember` skill.
+
+`notes/memory/` best embodies the "disposable vs. asset" theme — it is **not auto-injected** into any session. The only resident piece is an `index.md` table (a one-line summary per topic); the agent only follows the index to read a specific file once it judges the current task to be related. The memory store can grow without bound, yet it never bloats any individual conversation.
+
+## Layer Two: The Note Format Is Tailored to an Audience of One
+
+Layering solves "where things go," but for a cold-started session to grok these files at a glance, the format has to be **structured and highly personal**, not jotted down ad hoc.
+
+`todos.md` is the clearest example. It's not a flat list — it has a fixed syntax:
+
+```markdown
+## active
+
+- [P0][job] Prep for backend interviews · added 07-07 · touched 07-07
+  - reference JD: notes/brain-dump/flexport-...md
+  - starting tomorrow, keep prepping this direction: distributed systems, system design, behavioral
+```
+
+- `[P0]`–`[P3]` is priority, `[job]`/`[seo]`/`[agent]` are theme tags;
+- the two dates `added` / `touched` make "how long has this sat untouched" measurable;
+- three status buckets: `active` / `backlog` / `done`.
+
+This format is not a generic template — it's **designed against my specific flaws**. `user.md` spells out my shortcomings (a tendency to open new threads without closing them, ADHD-style rabbit-holing on config) and a `## don't let me` list. So the `touched` dates in `todos.md`, plus a dedicated `mentor` skill, let the agent point out at the right moment that "X moved twice this week, Y hasn't been touched in three weeks" — quantifying the drift I tend to overlook in myself.
+
+In other words: **the note format is itself the vehicle for personalization.** The same todo list, designed for someone else, would grow into something completely different.
+
+## Layer Three: The Knowledge Wiki — Layers Within Layers
+
+The external-knowledge layer (`notes/knowledge/`, managed by the `llm-wiki` skill) is itself a complete layered system, which shows how the "layering" idea can recurse:
+
+- `raw/` — the **evidence layer**. Original sources, append-only, kept at high fidelity.
+- `wiki/` — the **maintained layer**. Structured pages the agent distills, further split by type: `sources/` / `entities/` / `concepts/` / `syntheses/` / `reports/`.
+- `schema/` — the **operating manual**. This layer even has its own `AGENTS.md`, dedicated to the rules for ingest / query / lint.
+
+In other words, `knowledge/` is a **subsystem with a nested prompt**: the main `AGENTS.md` only needs to know "world knowledge → go through the `llm-wiki` skill," while how this subsystem is organized internally and what rules it follows is encapsulated in its own schema, expanded only when the agent actually comes in to do an ingest. This is exactly progressive disclosure expressed structurally — **the upper layer holds only an entry point, the details stay in the lower layer, loaded only when used.**
+
+## Stringing the Layers Together: Skill Routing
+
+At this point, the resident context really only holds three things: `AGENTS.md` itself, `user.md`, and `todos.md`. Everything else is expanded on demand through **progressive disclosure + skill routing**:
+
+- My setup has ~28 skills (`brain-dump`, `remember`, `llm-wiki`, `mentor`, `research`, `x-search`…). But **the only thing resident in context is a one-line `description` per skill**. A skill's full body (steps, scripts, caveats) loads only when it's triggered.
+- Likewise, `memory/` keeps only an index resident, `knowledge/` keeps only an entry concept, and the portfolio is just a one-line pointer inside `user.md` — the actual content is all "I'll go read it when you need it."
+
+The key mechanism here is **routing**: `AGENTS.md` and each skill's `description` together form a routing table of "what to expand under what conditions." The system prompt doesn't need to contain all the knowledge — it only needs to contain **enough signal to know where to look**. Which layer gets activated depends on which route my sentence triggered — this is both a way to save tokens and a way to keep the agent focused.
+
+## Wrapping Up
+
+Back to the line at the top:
+
+> Context is disposable, memory is the asset.
+
+The temptation of a long session is essentially **using disposable context as durable memory** — convenient in the short term, expensive and dulling for the agent in the long term. My whole approach is to fully separate the two:
+
+- memory (the asset) lives on disk — structured, layered, personalized;
+- context (the disposable) stays lean — a tiny resident core as the base, everything else expanded progressively via skill routing;
+- so "finish and leave, spin up a new session on a whim" becomes a psychologically weightless act — because everything the next session cares about is waiting on disk to be re-hydrated.
+
+This is just how I do it right now, not the definitive answer. But the judgment that "context and memory are two different things to manage" — I suspect that one holds up for good.
+
+</div>
