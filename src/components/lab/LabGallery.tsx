@@ -2,6 +2,7 @@
 
 import { useState, type ComponentType } from "react";
 import MiniPlanet from "@/components/lab/MiniPlanet";
+import PretextReflowLab from "@/components/lab/PretextReflowLab";
 import TiltCard from "@/components/lab/TiltCard";
 
 interface Demo {
@@ -28,6 +29,14 @@ const DEMOS: Demo[] = [
       "A no-dependency DOM trick: perspective transforms follow the cursor while a specular glare tracks it across the surface.",
     tag: "CSS · Pointer",
     Component: TiltCard,
+  },
+  {
+    id: "pretext",
+    title: "Gravity todo list",
+    blurb:
+      "A small @chenglou/pretext experiment: every todo is measured as real multiline text, so checking one off breaks it into letters that drop and pile up below. Undo lifts them back into place.",
+    tag: "Todo · Pretext",
+    Component: PretextReflowLab,
   },
 ];
 
