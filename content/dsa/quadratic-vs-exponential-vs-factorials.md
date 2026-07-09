@@ -1,5 +1,6 @@
 ---
 date: 2024-11-30
+draft: true
 ---
 
 # Quadratic vs exponential vs factorials
