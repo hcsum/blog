@@ -15,6 +15,14 @@ interface Demo {
 
 const DEMOS: Demo[] = [
   {
+    id: "pretext",
+    title: "Gravity todo list",
+    blurb:
+      "A small @chenglou/pretext experiment: every todo is measured as real multiline text, so checking one off breaks it into letters that drop and pile up below. Undo lifts them back into place.",
+    tag: "Todo · Pretext",
+    Component: PretextReflowLab,
+  },
+  {
     id: "planet",
     title: "A tiny low-poly planet",
     blurb:
@@ -29,14 +37,6 @@ const DEMOS: Demo[] = [
       "A no-dependency DOM trick: perspective transforms follow the cursor while a specular glare tracks it across the surface.",
     tag: "CSS · Pointer",
     Component: TiltCard,
-  },
-  {
-    id: "pretext",
-    title: "Gravity todo list",
-    blurb:
-      "A small @chenglou/pretext experiment: every todo is measured as real multiline text, so checking one off breaks it into letters that drop and pile up below. Undo lifts them back into place.",
-    tag: "Todo · Pretext",
-    Component: PretextReflowLab,
   },
 ];
 
