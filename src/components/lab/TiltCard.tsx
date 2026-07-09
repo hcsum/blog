@@ -29,6 +29,15 @@ export default function TiltCard() {
     });
   }, []);
 
+  const onPointerDown = useCallback(
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setActive(true);
+      onMove(event);
+    },
+    [onMove],
+  );
+
   const reset = useCallback(() => {
     setActive(false);
     setStyle({ rx: 0, ry: 0, gx: 50, gy: 50 });
@@ -36,18 +45,22 @@ export default function TiltCard() {
 
   return (
     <div
-      className="flex min-h-[560px] w-full items-center justify-center"
+      className="flex min-h-[420px] w-full items-center justify-center sm:min-h-[560px]"
       style={{ perspective: "1100px" }}
     >
       <div
         ref={cardRef}
         onPointerMove={onMove}
+        onPointerDown={onPointerDown}
         onPointerEnter={() => setActive(true)}
         onPointerLeave={reset}
-        className="relative aspect-[7/9] w-[19rem] max-w-[80vw] cursor-none rounded-[1.75rem] p-7 will-change-transform sm:w-[21rem]"
+        onPointerUp={reset}
+        onPointerCancel={reset}
+        className="relative aspect-[7/8.6] w-[17rem] max-w-[82vw] cursor-none rounded-[1.5rem] p-5 will-change-transform sm:aspect-[7/9] sm:w-[21rem] sm:rounded-[1.75rem] sm:p-7"
         style={{
           transform: `rotateX(${style.rx}deg) rotateY(${style.ry}deg) scale(${active ? 1.04 : 1})`,
           transformStyle: "preserve-3d",
+          touchAction: "none",
           transition: active
             ? "transform 90ms ease-out"
             : "transform 500ms cubic-bezier(0.22, 1, 0.36, 1)",
@@ -61,7 +74,7 @@ export default function TiltCard() {
       >
         {/* Specular glare that follows the pointer */}
         <div
-          className="pointer-events-none absolute inset-0 rounded-[1.75rem]"
+          className="pointer-events-none absolute inset-0 rounded-[1.5rem] sm:rounded-[1.75rem]"
           style={{
             background: `radial-gradient(circle at ${style.gx}% ${style.gy}%, rgba(255,255,255,0.55), rgba(255,255,255,0) 45%)`,
             opacity: active ? 0.85 : 0,
@@ -83,7 +96,7 @@ export default function TiltCard() {
               CSS · Pointer
             </p>
             <h3
-              className="mt-3 text-2xl font-semibold leading-tight"
+              className="mt-3 text-xl font-semibold leading-tight sm:text-2xl"
               style={{ color: "var(--foreground)", transform: "translateZ(24px)" }}
             >
               Perspective tilt
@@ -93,7 +106,7 @@ export default function TiltCard() {
           </div>
 
           <p
-            className="text-sm leading-6"
+            className="text-xs leading-5 sm:text-sm sm:leading-6"
             style={{ color: "var(--muted)" }}
           >
             No canvas, no WebGL — just a perspective transform driven by the
