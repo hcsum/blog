@@ -42,7 +42,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
               <AgentHeaderIndicator client:only="react" compact />
             </div>
           </div>
-          <nav class="mt-3 flex items-center gap-2 text-sm font-medium text-[color:var(--muted)] sm:mt-0 sm:gap-3">
+          <nav class="mt-3 flex items-center gap-5 text-sm font-medium text-[color:var(--muted)] sm:mt-0 sm:gap-9">
             <a
               class="rounded-full border border-[color:var(--line)] px-3 py-1.5 transition hover:text-[color:var(--foreground)] sm:border-transparent sm:px-0 sm:py-0"
               href="/posts/"
@@ -51,9 +51,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
             </a>
             <a
               class="rounded-full border border-[color:var(--line)] px-3 py-1.5 transition hover:text-[color:var(--foreground)] sm:border-transparent sm:px-0 sm:py-0"
-              href="/threejs/"
+              href="/lab/"
             >
-              Three.js
+              Lab
             </a>
             <div class="hidden sm:block">
               <AgentHeaderIndicator client:only="react" />

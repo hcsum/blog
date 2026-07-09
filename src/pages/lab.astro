@@ -1,0 +1,21 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import LabGallery from "@/components/lab/LabGallery";
+---
+
+<BaseLayout
+  title="Lab | Haochen Xu"
+  description="A small lab of interactive frontend experiments — WebGL scenes, CSS tricks, and other browser-only toys."
+>
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <div class="mb-10 max-w-3xl">
+      <p class="eyebrow mb-3">Lab</p>
+      <h1 class="text-5xl font-semibold tracking-tight">Small things I build for fun.</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">
+        A growing shelf of interactive frontend experiments — WebGL scenes, CSS
+        tricks, and other browser-only toys. Pick one and poke at it.
+      </p>
+    </div>
+    <LabGallery client:only="react" />
+  </section>
+</BaseLayout>
