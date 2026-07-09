@@ -1,21 +1,27 @@
 export const experiences = [
   {
     title:
-      "Founding Engineer at AI4XM LTD. Set up infra and coded full-stack. If you sees my job application, that means this project didn't go too well 😅",
-    startDate: "Apr 2024",
+      "Full-stack Engineer (contract). 80% backend, 20% frontend. Tech stack: AWS, DynamoDB, NodeJS, React Native.",
+    startDate: "Dec 2025",
     endDate: "present",
-    company: "AI4XM LTD",
-    img: "ai4xm.jpeg",
-    altText: "Logo for AI4XM LTD",
-    externalLink: "https://ai4xm.cn/",
+    company: "De Stijl Technology Network",
     details: "",
-    chips: ["PostgresDB", "NodeJS", "ReactJS", "NextJS"],
+    chips: ["AWS", "DynamoDB", "NodeJS", "React Native"],
+  },
+  {
+    title:
+      "Full-stack Software Engineer (contract) at an Australia-based software agency. Led frontend of a video-sharing platform from scratch, built the video upload pipeline, real-time chat via Azure Communication Services, commenting, and notifications. Owned the frontend roadmap and ran weekly stakeholder demos.",
+    startDate: "Apr 2025",
+    endDate: "Dec 2025",
+    company: "Bond Software",
+    details: "",
+    chips: ["TypeScript", "ReactJS", "Azure Communication Services", "NodeJS"],
   },
   {
     title:
       "Full-stack Software Engineer at Eventx.io, a Hong Kong SASS company. Tech stack: TypeScript, PostgresDB, NodeJS, ReactJS, TypeORM.",
     startDate: "Sep 2022",
-    endDate: "Apr 2024",
+    endDate: "Feb 2024",
     company: "Eventx",
     img: "eventx.jpg",
     altText: "Logo for Eventx",
@@ -29,7 +35,7 @@ export const experiences = [
   {
     title:
       "Senior Software Engineer at EPAM, a US publicly traded company consulting for Fortune 1000. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
-    startDate: "Nov 2020",
+    startDate: "May 2021",
     endDate: "Sep 2022",
     company: "EPAM",
     img: "EPAM_logo.png",
@@ -42,7 +48,7 @@ export const experiences = [
     title:
       "Software Engineer at EPAM, a US publicly traded company consulting for Fortune 1000. Tech stack: ReactJS, NodeJS, Typescript, GraphQL.",
     startDate: "Nov 2019",
-    endDate: "Nov 2020",
+    endDate: "Apr 2021",
     company: "EPAM",
     img: "EPAM_logo.png",
     altText: "Logo for EPAM",
@@ -51,6 +57,7 @@ export const experiences = [
       "Consulted for Expedia Group, the US online travel agent company. Worked with their Partner Central team based in Shenzhen. Led and built frontend pages for cancellation policy, reservation deposit policy settings. Worked with SCRUM master on regular basis to estimate project scope. Demo new features to key stakeholders and senior VPs on behalf of the team.",
   },
   {
+    company: "Frontend Engineer · startup",
     title:
       "Got hired by a local startup as a frontend engineer. Tech stack: VueJS, NuxtJS.",
     startDate: "2018",
@@ -58,12 +65,14 @@ export const experiences = [
     details: "",
   },
   {
+    company: "Learning to code full-time",
     title: "Decided to pursue programming as a career by learning full-time!",
     startDate: "2017",
     endDate: "2018",
     details: "",
   },
   {
+    company: "Marketing · consumer tech",
     title:
       "Worked in marketing for a consumer tech company. I was quite interested in consumer electronics at that time. Meanwhile learning to code as a hobby.",
     startDate: "2014",
@@ -71,6 +80,7 @@ export const experiences = [
     details: "",
   },
   {
+    company: "College",
     title:
       "Graduated with a college degree, but didn't figure out what I want to do. I guess traditional education and me failed each other.",
     startDate: "2008",
