@@ -322,7 +322,7 @@ export default function PretextReflowLab() {
             : it,
         ),
       );
-    }, 420);
+    }, 650);
     timersRef.current.push(collapse);
   }
 
@@ -435,7 +435,7 @@ export default function PretextReflowLab() {
   return (
     <div
       ref={containerRef}
-      className="relative h-[440px] overflow-hidden rounded-2xl"
+      className="relative h-[520px] overflow-hidden rounded-2xl sm:h-[440px]"
       style={{
         border: "1px solid var(--line)",
         background: "color-mix(in srgb, var(--foreground) 3%, transparent)",
@@ -544,7 +544,7 @@ export default function PretextReflowLab() {
               className="py-10 text-center text-sm"
               style={{ color: "var(--muted)" }}
             >
-              All done — nothing left to drop.
+              All done — nothing left to do.
             </div>
           )}
         </div>
@@ -567,7 +567,7 @@ function TodoRow({
   const collapsing = todo.status === "falling";
   const textHidden = todo.status !== "active";
   const isActive = todo.status === "active";
-  const rowMax = Math.max(64, height + 34);
+  const rowMax = Math.max(88, height + 56);
 
   return (
     <div
