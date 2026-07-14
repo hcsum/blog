@@ -9,7 +9,7 @@ import { sortPosts } from "@/lib/blog";
 const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).slice(0, 4);
 ---
 
-<BaseLayout title="Haochen Xu" description="Personal site of Haochen Xu: writing about software, frontend work, and experiments on the web.">
+<BaseLayout title="Haochen Xu" description="Personal site of Haochen Xu: full-stack software engineer writing about software, interfaces, and experiments on the web.">
   <LandingScene client:only="react" />
   <section class="border-b border-[color:var(--line)]">
     <div class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1.3fr_0.7fr] lg:py-28">
@@ -19,8 +19,8 @@ const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).
           I&apos;m Haochen
         </h1>
         <div class="mt-7 max-w-2xl space-y-5 text-lg leading-8 text-[color:var(--muted)]">
-          <p>My career path (if this counts as a path at all): 1 year in hospitality -> 3 years in marketing -> 8 years in software development -> nowadays building backend-first, with AI in the loop.</p>
-          <p>I orchestrate distributed, asynchronous backend systems and obsess over efficient, resilient design — while evolving my own AI agent daily, from its tooling to how it manages context. Took a line from Stephen Curry: "I can do all things" :) Prefer backend these days, but keep a soft spot for UX that feels lively and easy to use.</p>
+          <p>I build full-stack products with TypeScript, moving between product ideas, backend systems, data models, and frontend interfaces.</p>
+          <p>I&apos;m especially interested in async architecture on the backend, and lately I&apos;ve also been exploring AI agents and agent memory systems. I have a soft spot for UI that feels lively, clear, and easy to use.</p>
         </div>
         <div class="mt-10 flex flex-wrap gap-4">
           <a class="rounded-full bg-[color:var(--foreground)] px-6 py-3 text-sm font-semibold text-[color:var(--background)] transition hover:scale-[1.02]" href="/posts/">
