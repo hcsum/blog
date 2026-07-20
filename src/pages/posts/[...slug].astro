@@ -23,6 +23,22 @@ const descriptionZh = post.data.descriptionZh ?? meta.description;
 const descriptionEn = post.data.descriptionEn ?? meta.description;
 const pageTitle = defaultLang === "zh" ? titleZh : titleEn;
 const pageDescription = defaultLang === "zh" ? descriptionZh : descriptionEn;
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const h1Indexes = headings.reduce<number[]>((indexes, heading, index) => {
+  if (heading.depth === 1) {
+    indexes.push(index);
+  }
+  return indexes;
+}, []);
+const bilingualTocHeadings =
+  isBilingual && h1Indexes.length >= 2
+    ? {
+        zh: headings
+          .slice(h1Indexes[0] + 1, h1Indexes[1])
+          .filter((heading) => heading.depth >= 2 && heading.depth <= 3),
+        en: headings.slice(h1Indexes[1] + 1).filter((heading) => heading.depth >= 2 && heading.depth <= 3),
+      }
+    : undefined;
 ---
 
 <BaseLayout title={`${pageTitle} | Haochen Xu`} description={pageDescription}>
@@ -81,7 +97,7 @@ const pageDescription = defaultLang === "zh" ? descriptionZh : descriptionEn;
           <Content />
         </div>
       </div>
-      {!isBilingual && <TableOfContents headings={headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3)} />}
+      <TableOfContents headings={tocHeadings} headingsByLang={bilingualTocHeadings} currentLang={defaultLang} />
     </div>
   </article>
 </BaseLayout>
@@ -129,6 +145,10 @@ const pageDescription = defaultLang === "zh" ? descriptionZh : descriptionEn;
               descriptionNode.textContent = nextDescription;
             }
           }
+
+          document.querySelectorAll("[data-toc-lang]").forEach((list) => {
+            list.hidden = list.getAttribute("data-toc-lang") !== lang;
+          });
 
           buttons.forEach((button) => {
             const active = button.getAttribute("data-lang-choice") === lang;

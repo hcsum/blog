@@ -7,27 +7,62 @@ interface Heading {
 
 interface Props {
   headings: Heading[];
+  headingsByLang?: Partial<Record<"zh" | "en", Heading[]>>;
+  currentLang?: "zh" | "en";
 }
 
-const { headings } = Astro.props;
+const { headings, headingsByLang, currentLang = "en" } = Astro.props;
+const hasLanguageHeadings = Boolean(headingsByLang?.zh?.length || headingsByLang?.en?.length);
+const hasHeadings = headings.length > 0 || hasLanguageHeadings;
 ---
 
 {
-  headings.length > 0 && (
-    <aside class="glass-panel rounded-[1.5rem] p-5 lg:sticky lg:top-24">
+  hasHeadings && (
+    <aside class="glass-panel rounded-[1.5rem] p-5 lg:sticky lg:top-24" data-table-of-contents>
       <p class="mb-4 text-sm font-semibold uppercase tracking-[0.18em] text-[color:var(--accent)]">
         On this page
       </p>
       <nav>
-        <ul class="space-y-2 text-sm text-[color:var(--muted)]">
-          {headings.map((heading) => (
-            <li style={`margin-left: ${(heading.depth - 2) * 0.85}rem`}>
-              <a class="transition hover:text-[color:var(--accent)]" href={`#${heading.slug}`}>
-                {heading.text}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {hasLanguageHeadings ? (
+          <>
+            {headingsByLang?.zh && headingsByLang.zh.length > 0 && (
+              <div data-toc-lang="zh" hidden={currentLang !== "zh"}>
+                <ul class="space-y-2 text-sm text-[color:var(--muted)]">
+                  {headingsByLang.zh.map((heading) => (
+                    <li style={`margin-left: ${(heading.depth - 2) * 0.85}rem`}>
+                      <a class="transition hover:text-[color:var(--accent)]" href={`#${heading.slug}`}>
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {headingsByLang?.en && headingsByLang.en.length > 0 && (
+              <div data-toc-lang="en" hidden={currentLang !== "en"}>
+                <ul class="space-y-2 text-sm text-[color:var(--muted)]">
+                  {headingsByLang.en.map((heading) => (
+                    <li style={`margin-left: ${(heading.depth - 2) * 0.85}rem`}>
+                      <a class="transition hover:text-[color:var(--accent)]" href={`#${heading.slug}`}>
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
+        ) : (
+          <ul class="space-y-2 text-sm text-[color:var(--muted)]">
+            {headings.map((heading) => (
+              <li style={`margin-left: ${(heading.depth - 2) * 0.85}rem`}>
+                <a class="transition hover:text-[color:var(--accent)]" href={`#${heading.slug}`}>
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </nav>
     </aside>
   )
