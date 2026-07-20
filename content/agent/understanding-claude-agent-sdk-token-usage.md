@@ -5,6 +5,8 @@ titleZh: "几个 Claude Agent SDK 回合为什么会用完 5-hour limit"
 titleEn: "Why a Few Claude Agent SDK Turns Used Up My 5-Hour Limit"
 descriptionZh: "从一个 Gmail Bridge 触发的 Claude Code SDK session 出发，拆解为什么表面只有几轮对话，底层却产生了 44 次 model calls、5.84M cumulative usage tokens，以及 prompt caching、tool-use round trips 和 Claude Code harness 在里面分别做了什么。"
 descriptionEn: "Starting from a Gmail Bridge triggered Claude Code SDK session, this note breaks down how a few visible turns produced 44 model calls, 5.84M cumulative usage tokens, and a depleted 5-hour limit."
+ogImage: "/images/og/claude-agent-sdk-token-usage.png"
+ogImageAlt: "Abstract technical illustration of token streams, model-call traces, cache blocks, and a time-limit gauge."
 date: 2026-07-20
 tags: ["Agent", "Claude Code", "Claude Agent SDK", "Context", "Prompt Caching"]
 bilingual: true

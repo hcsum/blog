@@ -23,6 +23,7 @@ const descriptionZh = post.data.descriptionZh ?? meta.description;
 const descriptionEn = post.data.descriptionEn ?? meta.description;
 const pageTitle = defaultLang === "zh" ? titleZh : titleEn;
 const pageDescription = defaultLang === "zh" ? descriptionZh : descriptionEn;
+const ogImageAlt = post.data.ogImageAlt ?? pageTitle;
 const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
 const h1Indexes = headings.reduce<number[]>((indexes, heading, index) => {
   if (heading.depth === 1) {
@@ -41,7 +42,18 @@ const bilingualTocHeadings =
     : undefined;
 ---
 
-<BaseLayout title={`${pageTitle} | Haochen Xu`} description={pageDescription}>
+<BaseLayout
+  title={`${pageTitle} | Haochen Xu`}
+  description={pageDescription}
+  socialTitle={pageTitle}
+  type="article"
+  image={post.data.ogImage ? { src: post.data.ogImage, alt: ogImageAlt } : undefined}
+  article={{
+    publishedTime: meta.publishedAt,
+    section: meta.section,
+    tags: meta.tags,
+  }}
+>
   <article class="mx-auto max-w-6xl px-5 py-14">
     <a class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--accent)]" href="/posts/">
       <span aria-hidden="true">←</span>

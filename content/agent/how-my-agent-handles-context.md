@@ -5,6 +5,8 @@ titleZh: "我的 personal agent 怎么管上下文：把 context 当易耗品，
 titleEn: "How My Personal Agent Handles Context: Treat Context as Disposable, Memory as an Asset"
 descriptionZh: "从一句 AGENTS.md 出发，讲我这个常驻个人 agent 是怎么分层管理记忆与上下文的：极小的常驻层 + 渐进式披露 + skill routing，让我可以放心地『做完就走、随手开新 session』。"
 descriptionEn: "Starting from a single line in AGENTS.md, here's how my always-on personal agent layers memory and context: a tiny always-loaded core, progressive disclosure, and skill routing — so I can finish a task, close the session, and start a fresh one without a second thought."
+ogImage: "/images/og/how-my-agent-handles-context.png"
+ogImageAlt: "Abstract technical illustration of transient context windows flowing into durable organized memory blocks."
 date: 2026-07-09
 tags: ["Agent", "OpenCode", "Context", "Memory", "Progressive Disclosure"]
 bilingual: true

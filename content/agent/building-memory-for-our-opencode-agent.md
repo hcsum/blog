@@ -5,6 +5,8 @@ titleZh: "我为什么给 agent 加了 memory，最后又把它删了"
 titleEn: "Why I Added Memory to My Agent and Then Removed It"
 descriptionZh: "一篇关于 OpenCode agent 长期记忆系统的复盘：从文件式 memory，到 mem0 + Qdrant，再到最终回归显式 notes。"
 descriptionEn: "An engineering postmortem on building, tightening, and ultimately disabling long-term memory in my OpenCode agent."
+ogImage: "/images/og/building-memory-for-our-opencode-agent.png"
+ogImageAlt: "Abstract technical illustration of an agent memory module being detached while clean auditable notes remain organized."
 date: 2026-07-01
 tags: ["Agent", "OpenCode", "Memory", "LLM", "Postmortem"]
 bilingual: true
