@@ -799,3 +799,9 @@ a {
     height: 14.5rem;
   }
 }
+
+/* Bilingual posts keep both language blocks in one markdown body; the route picks one. */
+[data-bilingual-root][data-post-lang="zh"] [data-lang="en"],
+[data-bilingual-root][data-post-lang="en"] [data-lang="zh"] {
+  display: none;
+}

@@ -1,0 +1,39 @@
+---
+import { LOCALES, canonicalPath, localizePath, type Locale } from "@/i18n/config";
+
+interface Props {
+  locale: Locale;
+  /** Canonical (unprefixed) path of the current page, e.g. `/posts/agent/foo/`. */
+  path: string;
+  compact?: boolean;
+}
+
+const { locale, path, compact = false } = Astro.props;
+const base = canonicalPath(path);
+const labels: Record<Locale, string> = { en: "EN", zh: "中文" };
+---
+
+<div
+  class="inline-flex items-center gap-1 rounded-full border border-[color:var(--line)] p-0.5"
+  aria-label="Language / 语言"
+  role="group"
+>
+  {
+    LOCALES.map((option) => (
+      <a
+        class:list={[
+          "rounded-full px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.12em] transition",
+          compact ? "px-2" : "",
+          option === locale
+            ? "bg-[color:var(--foreground)] text-[color:var(--background)]"
+            : "text-[color:var(--muted)] hover:text-[color:var(--foreground)]",
+        ]}
+        aria-current={option === locale ? "true" : undefined}
+        hreflang={option}
+        href={localizePath(base, option)}
+      >
+        {labels[option]}
+      </a>
+    ))
+  }
+</div>

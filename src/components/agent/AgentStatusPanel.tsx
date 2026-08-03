@@ -2,12 +2,16 @@
 
 import type { AgentFeedSnapshot } from "@/lib/agent-status";
 import { formatLocalTimestamp, formatPresenceLabel } from "@/lib/agent-status";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
 
 type AgentStatusPanelProps = {
   feed: AgentFeedSnapshot;
+  lang?: Locale;
 };
 
-export default function AgentStatusPanel({ feed }: AgentStatusPanelProps) {
+export default function AgentStatusPanel({ feed, lang = DEFAULT_LOCALE }: AgentStatusPanelProps) {
+  const t = useTranslations(lang);
   const hasPresenceSnapshot = Boolean(feed.current.data || feed.events.data);
   const tasksHandled = feed.current.data?.stats?.tasksHandled;
   const tasksCompleted = feed.current.data?.stats?.tasksCompleted;
@@ -15,24 +19,26 @@ export default function AgentStatusPanel({ feed }: AgentStatusPanelProps) {
 
   const stats = [
     {
-      label: "Presence",
-      value: hasPresenceSnapshot ? formatPresenceLabel(feed.derived.presence) : "Waiting",
+      label: t("agent.stat.presence"),
+      value: hasPresenceSnapshot
+        ? formatPresenceLabel(feed.derived.presence, lang)
+        : t("agent.stat.waiting"),
     },
     {
-      label: "Last heartbeat",
-      value: formatLocalTimestamp(feed.derived.lastSeenAt),
+      label: t("agent.stat.lastHeartbeat"),
+      value: formatLocalTimestamp(feed.derived.lastSeenAt, lang),
       compactValue: true,
     },
     {
-      label: "Tasks handled",
-      value: tasksHandled != null ? String(tasksHandled) : "Waiting",
+      label: t("agent.stat.tasksHandled"),
+      value: tasksHandled != null ? String(tasksHandled) : t("agent.stat.waiting"),
     },
     {
-      label: "Completed / Failed",
+      label: t("agent.stat.completedFailed"),
       value:
         tasksCompleted != null || tasksFailed != null
           ? `${tasksCompleted ?? 0} / ${tasksFailed ?? 0}`
-          : "Waiting",
+          : t("agent.stat.waiting"),
       compactValue: true,
     },
   ];

@@ -4,8 +4,17 @@ import AgentCoreVisual from "@/components/agent/AgentCoreVisual";
 import AgentEventTimeline from "@/components/agent/AgentEventTimeline";
 import AgentStatusPanel from "@/components/agent/AgentStatusPanel";
 import { useAgentStatusFeed } from "@/lib/agent-status";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
 
-export default function AgentStatusDashboard() {
+interface AgentStatusDashboardProps {
+  lang?: Locale;
+}
+
+export default function AgentStatusDashboard({
+  lang = DEFAULT_LOCALE,
+}: AgentStatusDashboardProps) {
+  const t = useTranslations(lang);
   const feed = useAgentStatusFeed();
   const current = feed.current.data;
 
@@ -14,12 +23,7 @@ export default function AgentStatusDashboard() {
       <div className="mx-auto max-w-7xl px-5 py-8 md:py-10">
         <header className="agent-intro max-w-3xl">
           <p className="mt-4 text-sm leading-7 text-[color:var(--muted)] md:text-base md:leading-8">
-            This page reads from the public status surface for my AI agent. I
-            interact with it through a Gmail bridge, and the live card below is
-            mirrored from a public Workers endpoint rather than the local
-            machine itself. It also runs scheduled tasks like sending me morning
-            reports with updates from my favorite websites. The event stream is
-            only a recent public window into that activity.
+            {t("agent.intro")}
           </p>
           <a
             className="agent-intro__link mt-6"
@@ -27,7 +31,7 @@ export default function AgentStatusDashboard() {
             rel="noreferrer"
             target="_blank"
           >
-            View the repo on GitHub
+            {t("agent.repoLink")}
             <svg
               aria-hidden="true"
               className="h-4 w-4"
@@ -47,6 +51,7 @@ export default function AgentStatusDashboard() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-start">
           <div className="space-y-6">
             <AgentCoreVisual
+              lang={lang}
               hasFetchError={feed.derived.hasFetchError}
               lastKnownStatus={feed.derived.lastKnownStatus}
               presence={feed.derived.presence}
@@ -55,9 +60,9 @@ export default function AgentStatusDashboard() {
               title={current?.title}
               tone={feed.derived.statusTone}
             />
-            <AgentStatusPanel feed={feed} />
+            <AgentStatusPanel feed={feed} lang={lang} />
           </div>
-          <AgentEventTimeline feed={feed} />
+          <AgentEventTimeline feed={feed} lang={lang} />
         </div>
       </div>
     </section>

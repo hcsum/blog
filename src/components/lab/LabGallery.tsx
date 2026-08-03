@@ -4,11 +4,13 @@ import { useState, type ComponentType } from "react";
 import MiniPlanet from "@/components/lab/MiniPlanet";
 import PretextReflowLab from "@/components/lab/PretextReflowLab";
 import TiltCard from "@/components/lab/TiltCard";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations, type UIKey } from "@/i18n/ui";
 
 interface Demo {
   id: string;
-  title: string;
-  blurb: string;
+  titleKey: UIKey;
+  blurbKey: UIKey;
   tag: string;
   Component: ComponentType;
 }
@@ -16,25 +18,22 @@ interface Demo {
 const DEMOS: Demo[] = [
   {
     id: "pretext",
-    title: "Gravity todo list",
-    blurb:
-      "A small @chenglou/pretext experiment: every todo is measured as real multiline text, so checking one off breaks it into letters that drop and pile up below. Undo lifts them back into place.",
+    titleKey: "lab.pretext.title",
+    blurbKey: "lab.pretext.description",
     tag: "Todo · Pretext",
     Component: PretextReflowLab,
   },
   {
     id: "planet",
-    title: "A tiny low-poly planet",
-    blurb:
-      "A procedural mini-world — an icosphere pushed into hills, a shell of water, cone-trees and drifting clouds, all generated in code. Drag to orbit; it turns on its own.",
+    titleKey: "lab.planet.title",
+    blurbKey: "lab.planet.description",
     tag: "WebGL · three.js",
     Component: MiniPlanet,
   },
   {
     id: "tilt",
-    title: "Pointer-driven 3D tilt",
-    blurb:
-      "A no-dependency DOM trick: perspective transforms follow the cursor while a specular glare tracks it across the surface.",
+    titleKey: "lab.tilt.title",
+    blurbKey: "lab.tilt.description",
     tag: "CSS · Pointer",
     Component: TiltCard,
   },
@@ -42,7 +41,12 @@ const DEMOS: Demo[] = [
 
 const PER_PAGE = 3;
 
-export default function LabGallery() {
+interface LabGalleryProps {
+  lang?: Locale;
+}
+
+export default function LabGallery({ lang = DEFAULT_LOCALE }: LabGalleryProps) {
+  const t = useTranslations(lang);
   const [page, setPage] = useState(0);
   const pageCount = Math.max(1, Math.ceil(DEMOS.length / PER_PAGE));
   const start = page * PER_PAGE;
@@ -66,13 +70,13 @@ export default function LabGallery() {
                   {demo.tag}
                 </p>
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  {demo.title}
+                  {t(demo.titleKey)}
                 </h2>
                 <p
                   className="max-w-2xl text-sm leading-6"
                   style={{ color: "var(--muted)" }}
                 >
-                  {demo.blurb}
+                  {t(demo.blurbKey)}
                 </p>
               </div>
               <div className="glass-panel mt-6 overflow-hidden rounded-[2rem] p-4">
@@ -92,7 +96,7 @@ export default function LabGallery() {
             className="rounded-full border px-4 py-2 text-sm font-medium transition disabled:opacity-40"
             style={{ borderColor: "var(--line)", color: "var(--muted)" }}
           >
-            Prev
+            {t("lab.prev")}
           </button>
           {Array.from({ length: pageCount }).map((_, i) => {
             const isActive = i === page;
@@ -120,7 +124,7 @@ export default function LabGallery() {
             className="rounded-full border px-4 py-2 text-sm font-medium transition disabled:opacity-40"
             style={{ borderColor: "var(--line)", color: "var(--muted)" }}
           >
-            Next
+            {t("lab.next")}
           </button>
         </nav>
       )}

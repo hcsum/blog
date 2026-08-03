@@ -6,20 +6,25 @@ import {
   getToneMeta,
   useAgentStatusFeed,
 } from "@/lib/agent-status";
+import { DEFAULT_LOCALE, localizePath, type Locale } from "@/i18n/config";
+import { useTranslations, type UIKey } from "@/i18n/ui";
 
 interface AgentHeaderIndicatorProps {
   compact?: boolean;
+  lang?: Locale;
 }
 
 export default function AgentHeaderIndicator({
   compact = false,
+  lang = DEFAULT_LOCALE,
 }: AgentHeaderIndicatorProps) {
+  const t = useTranslations(lang);
   const feed = useAgentStatusFeed();
   const tone = getToneMeta(feed.derived.statusTone);
   const label = feed.current.data
-    ? getHeaderLabel(feed.derived.status, feed.derived.presence)
-    : "AGENT UNAVAILABLE";
-  const summary = feed.current.data?.summary ?? "Public status feed";
+    ? t(getHeaderLabelKey(feed.derived.status, feed.derived.presence))
+    : t("agent.header.unavailable");
+  const summary = feed.current.data?.summary ?? t("agent.header.feed");
   const className = compact
     ? "agent-indicator shrink-0 rounded-full border border-[color:var(--line)] p-2 transition hover:border-[color:var(--accent)] hover:text-[color:var(--foreground)]"
     : "agent-indicator shrink-0 rounded-full border border-[color:var(--line)] px-3 py-1.5 transition hover:border-[color:var(--accent)] hover:text-[color:var(--foreground)]";
@@ -28,7 +33,7 @@ export default function AgentHeaderIndicator({
     <a
       aria-label={`${label}. ${summary}`}
       className={className}
-      href="/agent"
+      href={localizePath("/agent", lang)}
       style={
         {
           "--agent-tone": tone.accent,
@@ -57,34 +62,34 @@ export default function AgentHeaderIndicator({
   );
 }
 
-function getHeaderLabel(status: string, presence = "online") {
+function getHeaderLabelKey(status: string, presence = "online"): UIKey {
   if (presence === "offline" && normalizeStatus(status) !== "failed") {
-    return "AGENT OFFLINE";
+    return "agent.header.offline";
   }
 
   if (presence === "stale" && normalizeStatus(status) !== "failed") {
-    return "AGENT STALE";
+    return "agent.header.stale";
   }
 
   switch (normalizeStatus(status)) {
     case "idle":
-      return "AGENT IDLE";
+      return "agent.header.idle";
     case "researching":
-      return "AGENT RESEARCHING";
+      return "agent.header.researching";
     case "drafting":
     case "running":
     case "queued":
     case "received":
     case "completed":
     case "delivered":
-      return "AGENT RESPONDING";
+      return "agent.header.responding";
     case "knowledge":
-      return "AGENT LEARNING";
+      return "agent.header.learning";
     case "deployment":
-      return "AGENT UPDATING";
+      return "agent.header.updating";
     case "failed":
-      return "AGENT DEGRADED";
+      return "agent.header.degraded";
     default:
-      return "AGENT ACTIVE";
+      return "agent.header.active";
   }
 }

@@ -1,0 +1,20 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import AgentStatusDashboard from "@/components/agent/AgentStatusDashboard";
+import AgentStatusFallback from "@/components/agent/AgentStatusFallback.astro";
+import type { Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<BaseLayout locale={locale} title={t("agent.title")} description={t("agent.description")}>
+  <AgentStatusDashboard client:only="react" lang={locale}>
+    <AgentStatusFallback slot="fallback" locale={locale} />
+  </AgentStatusDashboard>
+</BaseLayout>

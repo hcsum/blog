@@ -1,0 +1,87 @@
+---
+import { render } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import TableOfContents from "@/components/TableOfContents.astro";
+import { formatDate, getPostMeta, type BlogEntry } from "@/lib/blog";
+import { localizePath, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
+
+interface Props {
+  post: BlogEntry;
+  locale: Locale;
+}
+
+const { post, locale } = Astro.props;
+const t = useTranslations(locale);
+const meta = getPostMeta(post, locale);
+const { Content, headings } = await render(post);
+const isBilingual = meta.bilingual;
+
+// Bilingual posts store `# zh` then `# en` as two top-level blocks; slice the TOC
+// to the block that matches the current locale.
+const h1Indexes = headings.reduce<number[]>((indexes, heading, index) => {
+  if (heading.depth === 1) {
+    indexes.push(index);
+  }
+  return indexes;
+}, []);
+const inRange = (heading: { depth: number }) => heading.depth >= 2 && heading.depth <= 3;
+const tocHeadings =
+  isBilingual && h1Indexes.length >= 2
+    ? (locale === "zh"
+        ? headings.slice(h1Indexes[0] + 1, h1Indexes[1])
+        : headings.slice(h1Indexes[1] + 1)
+      ).filter(inRange)
+    : headings.filter(inRange);
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${meta.title} | Haochen Xu`}
+  description={meta.description}
+  socialTitle={meta.title}
+  type="article"
+  image={post.data.ogImage ? { src: post.data.ogImage, alt: post.data.ogImageAlt ?? meta.title } : undefined}
+  article={{
+    publishedTime: meta.publishedAt,
+    section: meta.section,
+    tags: meta.tags,
+  }}
+>
+  <article class="mx-auto max-w-6xl px-5 py-14">
+    <a
+      class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-[color:var(--accent)]"
+      href={localizePath("/posts/", locale)}
+    >
+      <span aria-hidden="true">←</span>
+      {t("posts.back")}
+    </a>
+
+    <header class="mb-12 max-w-3xl">
+      <div class="mb-5 flex flex-wrap items-center gap-3 text-sm text-[color:var(--muted)]">
+        <span class="rounded-full border border-[color:var(--line)] px-3 py-1">{meta.section}</span>
+        {meta.publishedAt && (
+          <time datetime={meta.publishedAt.toISOString()}>{formatDate(meta.publishedAt, locale)}</time>
+        )}
+        <span>{meta.readingTime} {t("posts.readingTime")}</span>
+      </div>
+      <h1 class="text-4xl font-semibold leading-tight tracking-tight md:text-6xl">{meta.title}</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">{meta.description}</p>
+    </header>
+
+    <div class="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_17rem]">
+      <div class="glass-panel rounded-[2rem] p-6 md:p-10">
+        {!meta.hasTranslation && (
+          <p class="mb-8 rounded-[1.5rem] border border-[color:var(--line)] bg-[color:var(--surface)] px-5 py-4 text-sm text-[color:var(--muted)]">
+            {t("posts.noTranslation")}
+          </p>
+        )}
+        <div class="prose prose-lg" data-bilingual-root={isBilingual ? "true" : undefined} data-post-lang={locale}>
+          <Content />
+        </div>
+      </div>
+      <TableOfContents headings={tocHeadings} locale={locale} />
+    </div>
+  </article>
+</BaseLayout>
+

@@ -12,8 +12,11 @@ import {
   type AgentPresence,
   type AgentStatusTone,
 } from "@/lib/agent-status";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
 
 type AgentCoreVisualProps = {
+  lang?: Locale;
   title?: string;
   summary?: string;
   status: string;
@@ -54,7 +57,9 @@ export default function AgentCoreVisual({
   presence,
   lastKnownStatus,
   hasFetchError,
+  lang = DEFAULT_LOCALE,
 }: AgentCoreVisualProps) {
+  const t = useTranslations(lang);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const statusRef = useRef(normalizeStatus(status));
   const visualStateRef = useRef<VisualState>({
@@ -423,11 +428,11 @@ export default function AgentCoreVisual({
   }, [presence, status, tone]);
 
   const resolvedTitle = hasFetchError
-    ? "Agent unavailable"
-    : title ?? getStatusFallbackTitle(status, presence);
+    ? t("agent.unavailable.title")
+    : title ?? getStatusFallbackTitle(status, presence, lang);
   const resolvedSummary = hasFetchError
-    ? "The current status snapshot could not be fetched. Try again once the public status surface is reachable."
-    : summary ?? getStatusFallbackSummary(status, presence);
+    ? t("agent.unavailable.summary")
+    : summary ?? getStatusFallbackSummary(status, presence, lang);
   const showLastKnownStatus = presence !== "online" && normalizeStatus(lastKnownStatus);
 
   return (
@@ -446,11 +451,11 @@ export default function AgentCoreVisual({
         <div className="relative z-10 flex max-w-2xl flex-col items-center text-center">
           <div className="agent-hero-badge">
             <span className="agent-hero-badge__dot" />
-            <span>Agent Status: {getStatusChipLabel(status)}</span>
+            <span>{t("agent.chip.status")}: {getStatusChipLabel(status, lang)}</span>
           </div>
           {showLastKnownStatus ? (
             <p className="mt-3 text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
-              Presence: {formatPresenceLabel(presence)} · Last known: {getStatusChipLabel(lastKnownStatus)}
+              {t("agent.stat.presence")}: {formatPresenceLabel(presence, lang)} · {getStatusChipLabel(lastKnownStatus, lang)}
             </p>
           ) : null}
           <h2 className="agent-display mt-5 text-3xl font-bold tracking-[-0.03em] text-[color:var(--foreground)] md:text-5xl">

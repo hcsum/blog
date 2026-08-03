@@ -12,15 +12,22 @@ import {
   getStatusChipLabel,
   getToneMeta,
 } from "@/lib/agent-status";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
 
 type AgentEventTimelineProps = {
   feed: AgentFeedSnapshot;
+  lang?: Locale;
 };
 
 const ESTIMATED_CARD_HEIGHT = 196;
 const OVERSCAN_COUNT = 3;
 
-export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
+export default function AgentEventTimeline({
+  feed,
+  lang = DEFAULT_LOCALE,
+}: AgentEventTimelineProps) {
+  const t = useTranslations(lang);
   const events = feed.derived.eventsNewestFirst;
   const viewportRef = useRef<HTMLDivElement>(null);
   const previousEventIdsRef = useRef<string[]>([]);
@@ -29,14 +36,16 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
   const [itemHeights, setItemHeights] = useState<Record<string, number>>({});
   const [recentlyAddedIds, setRecentlyAddedIds] = useState<string[]>([]);
   const hasPresenceSnapshot = Boolean(feed.current.data || feed.events.data);
-  const timelinePresence = hasPresenceSnapshot ? formatPresenceLabel(feed.derived.presence) : "Waiting";
+  const timelinePresence = hasPresenceSnapshot
+    ? formatPresenceLabel(feed.derived.presence, lang)
+    : t("agent.stat.waiting");
   const timelineNotice =
     feed.derived.presence === "stale"
-      ? "Heartbeat is delayed. This timeline is only a recent public window and may already be behind the live machine."
+      ? t("agent.timeline.stale")
       : feed.derived.presence === "offline"
-        ? "The local agent is offline. This timeline remains available as a recent window, not a cumulative history."
+        ? t("agent.timeline.offline")
         : feed.events.stale
-          ? "Recent activity is waiting on a fresh fetch. Showing the latest cached public window for now."
+          ? t("agent.timeline.fetching")
           : null;
 
   useEffect(() => {
@@ -143,7 +152,7 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
     <section className="agent-panel agent-stream-panel rounded-[2rem] p-6">
       <div className="mb-2 flex items-end justify-between gap-4">
         <div>
-          <p className="eyebrow">Event Stream</p>
+          <p className="eyebrow">{t("agent.timeline.eyebrow")}</p>
         </div>
         <div className="agent-stream-live">
           <span className="agent-stream-live__dot" />
@@ -160,7 +169,7 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
       <div className="mt-6">
         {events.length === 0 ? (
           <div className="rounded-[1.6rem] border border-dashed border-[color:var(--line)] px-5 py-8 text-sm text-[color:var(--muted)]">
-            No recent activity yet. The timeline fills in as new public events arrive.
+            {t("agent.timeline.empty")}
           </div>
         ) : (
           <div className="agent-virtual-list-shell">
@@ -180,6 +189,7 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
                 {visibleItems.map(({ event, index }) => (
                   <VirtualEventCard
                     event={event}
+                    lang={lang}
                     isNew={recentlyAddedIds.includes(event.id)}
                     key={event.id}
                     onHeightChange={setItemHeight}
@@ -198,11 +208,12 @@ export default function AgentEventTimeline({ feed }: AgentEventTimelineProps) {
 type VirtualEventCardProps = {
   event: AgentFeedSnapshot["derived"]["eventsNewestFirst"][number];
   isNew: boolean;
+  lang: Locale;
   onHeightChange: (id: string, height: number) => void;
   top: number;
 };
 
-function VirtualEventCard({ event, isNew, onHeightChange, top }: VirtualEventCardProps) {
+function VirtualEventCard({ event, isNew, lang, onHeightChange, top }: VirtualEventCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const tone = getToneMeta(getEventTone(event));
   const taskType = formatTaskTypeLabel(event.taskType);
@@ -251,9 +262,9 @@ function VirtualEventCard({ event, isNew, onHeightChange, top }: VirtualEventCar
         }
       >
         <div className="flex flex-wrap items-center gap-3">
-          <span className="agent-chip">{getStatusChipLabel(event.status)}</span>
+          <span className="agent-chip">{getStatusChipLabel(event.status, lang)}</span>
           <span className="agent-data-value ml-auto text-xs text-[color:var(--muted)]">
-            {formatLocalTimestamp(event.ts)}
+            {formatLocalTimestamp(event.ts, lang)}
           </span>
         </div>
 

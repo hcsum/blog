@@ -1,0 +1,24 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import LabGallery from "@/components/lab/LabGallery";
+import type { Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<BaseLayout locale={locale} title={t("lab.title")} description={t("lab.description")}>
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <div class="mb-10 max-w-3xl">
+      <p class="eyebrow mb-3">{t("lab.eyebrow")}</p>
+      <h1 class="text-5xl font-semibold tracking-tight">{t("lab.heading")}</h1>
+      <p class="mt-5 text-lg leading-8 text-[color:var(--muted)]">{t("lab.intro")}</p>
+    </div>
+    <LabGallery client:only="react" lang={locale} />
+  </section>
+</BaseLayout>

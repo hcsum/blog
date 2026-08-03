@@ -1,3 +1,11 @@
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import {
+  activityLabel,
+  fallbackSummary,
+  fallbackTitle,
+  miscLabel,
+  presenceLabel,
+} from "@/i18n/agent-status";
 import { useSyncExternalStore } from "react";
 
 export const AGENT_STATUS_BASE_URL = "https://opencode-agent-status.sumtsui.workers.dev";
@@ -654,127 +662,51 @@ export function normalizePresence(presence?: string | null): AgentPresence {
   return "online";
 }
 
-export function getActivityLabel(status: string, presence: AgentPresence = "online") {
+export function getActivityLabel(
+  status: string,
+  presence: AgentPresence = "online",
+  locale: Locale = DEFAULT_LOCALE,
+) {
   if (presence === "offline" && normalizeStatus(status) !== "failed") {
-    return "Agent offline";
+    return activityLabel(locale, "offlinePresence");
   }
 
   if (presence === "stale" && normalizeStatus(status) !== "failed") {
-    return "Heartbeat delayed";
+    return activityLabel(locale, "stalePresence");
   }
 
-  switch (normalizeStatus(status)) {
-    case "deployment":
-      return "Deploying update";
-    case "received":
-      return "Task received";
-    case "queued":
-      return "Task queued";
-    case "running":
-      return "Agent running";
-    case "researching":
-      return "Researching";
-    case "drafting":
-      return "Drafting response";
-    case "knowledge":
-      return "Updating knowledge";
-    case "completed":
-      return "Task completed";
-    case "delivered":
-      return "Report delivered";
-    case "failed":
-      return "Attention required";
-    case "idle":
-      return "Agent idle";
-    default:
-      return "Agent unavailable";
-  }
+  return activityLabel(locale, normalizeStatus(status));
 }
 
-export function getStatusFallbackTitle(status: string, presence: AgentPresence = "online") {
-  if (presence === "offline") return "Agent offline";
-  if (presence === "stale") return "Heartbeat delayed";
+export function getStatusFallbackTitle(
+  status: string,
+  presence: AgentPresence = "online",
+  locale: Locale = DEFAULT_LOCALE,
+) {
+  if (presence === "offline") return fallbackTitle(locale, "offline");
+  if (presence === "stale") return fallbackTitle(locale, "stale");
 
-  switch (normalizeStatus(status)) {
-    case "offline":
-      return "Agent offline";
-    case "stale":
-      return "Heartbeat delayed";
-    case "deployment":
-      return "Deploying a fresh build";
-    case "received":
-      return "New task received";
-    case "queued":
-      return "Task queued";
-    case "running":
-      return "Working through a task";
-    case "researching":
-      return "Researching the request";
-    case "drafting":
-      return "Drafting a response";
-    case "knowledge":
-      return "Updating its knowledge";
-    case "completed":
-      return "Task completed";
-    case "delivered":
-      return "Report delivered";
-    case "failed":
-      return "Task failed safely";
-    case "idle":
-      return "Agent idle";
-    default:
-      return "Agent unavailable";
-  }
+  return fallbackTitle(locale, normalizeStatus(status));
 }
 
-export function getStatusFallbackSummary(status: string, presence: AgentPresence = "online") {
-  if (presence === "offline") {
-    return "The local machine is not heartbeating right now. The last visible task state may no longer be current.";
-  }
+export function getStatusFallbackSummary(
+  status: string,
+  presence: AgentPresence = "online",
+  locale: Locale = DEFAULT_LOCALE,
+) {
+  if (presence === "offline") return fallbackSummary(locale, "offlinePresence");
+  if (presence === "stale") return fallbackSummary(locale, "stalePresence");
 
-  if (presence === "stale") {
-    return "Heartbeat is late. The agent may still be running, but the public snapshot could already be outdated.";
-  }
-
-  switch (normalizeStatus(status)) {
-    case "offline":
-      return "The local machine is currently unreachable. Treat this as machine-level absence rather than a task failure.";
-    case "stale":
-      return "The last heartbeat is late, so the returned task state may already be stale.";
-    case "deployment":
-      return "A new build is rolling out. The agent will be back on task once the deployment settles.";
-    case "received":
-      return "A new request just landed and is being prepared for execution.";
-    case "queued":
-      return "A task is waiting in the queue for the next open worker slot.";
-    case "running":
-      return "The agent is actively executing a task right now.";
-    case "researching":
-      return "The agent is gathering public context before drafting its response.";
-    case "drafting":
-      return "The agent has enough evidence and is writing up its response.";
-    case "knowledge":
-      return "The agent is updating its persistent knowledge layer.";
-    case "completed":
-      return "The last task finished cleanly. The agent is wrapping up.";
-    case "delivered":
-      return "A scheduled brief was delivered successfully.";
-    case "failed":
-      return "The last task hit a recoverable error and stopped safely. Details are intentionally sanitized.";
-    case "idle":
-      return "No task is currently running. The agent is waiting for the next workload to enter its orbit.";
-    default:
-      return "The agent status is currently unavailable.";
-  }
+  return fallbackSummary(locale, normalizeStatus(status));
 }
 
-export function formatLocalTimestamp(value?: string | null) {
-  if (!value) return "Waiting for first snapshot";
+export function formatLocalTimestamp(value?: string | null, locale: Locale = DEFAULT_LOCALE) {
+  if (!value) return miscLabel(locale, "waitingSnapshot");
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : undefined, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -823,9 +755,10 @@ export function getEventTone(event: AgentEvent): AgentStatusTone {
   return mapStatusTone(event.status);
 }
 
-export function getStatusChipLabel(status?: string | null) {
+export function getStatusChipLabel(status?: string | null, locale: Locale = DEFAULT_LOCALE) {
   const normalized = normalizeStatus(status);
-  if (!normalized) return "Unavailable";
+  if (!normalized) return miscLabel(locale, "chipUnavailable");
+  if (locale !== DEFAULT_LOCALE) return activityLabel(locale, normalized);
 
   return humanizeStatus(normalized);
 }
@@ -834,15 +767,11 @@ export function getEventTypeLabel(type: string) {
   return humanizeStatus(type);
 }
 
-export function formatPresenceLabel(presence?: AgentPresence | null) {
-  switch (normalizePresence(presence)) {
-    case "online":
-      return "Online";
-    case "stale":
-      return "Stale";
-    case "offline":
-      return "Offline";
-  }
+export function formatPresenceLabel(
+  presence?: AgentPresence | null,
+  locale: Locale = DEFAULT_LOCALE,
+) {
+  return presenceLabel(locale, normalizePresence(presence));
 }
 
 function shouldUseLocalAgentMocks() {

@@ -1,0 +1,78 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PostCard from "@/components/PostCard.astro";
+import LandingScene from "@/components/LandingScene";
+import { experiences, localizeExperience } from "@/components/Experiences";
+import { sortPosts } from "@/lib/blog";
+import { localizePath, type Locale } from "@/i18n/config";
+import { useTranslations } from "@/i18n/ui";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const posts = sortPosts(await getCollection("blog", ({ data }) => !data.draft)).slice(0, 4);
+const localizedExperiences = experiences.map((experience) => localizeExperience(experience, locale));
+---
+
+<BaseLayout locale={locale} title={t("home.title")} description={t("home.description")}>
+  <LandingScene client:only="react" />
+  <section class="border-b border-[color:var(--line)]">
+    <div class="mx-auto grid max-w-6xl gap-12 px-5 py-20 lg:grid-cols-[1.3fr_0.7fr] lg:py-28">
+      <div>
+        <p class="eyebrow mb-5">{t("home.eyebrow")}</p>
+        <h1 class="max-w-4xl text-5xl font-semibold leading-tight tracking-tight md:text-7xl">
+          {t("home.heading")}
+        </h1>
+        <div class="mt-7 max-w-2xl space-y-5 text-lg leading-8 text-[color:var(--muted)]">
+          <p>{t("home.intro1")}</p>
+          <p>{t("home.intro2")}</p>
+        </div>
+        <div class="mt-10 flex flex-wrap gap-4">
+          <a
+            class="rounded-full bg-[color:var(--foreground)] px-6 py-3 text-sm font-semibold text-[color:var(--background)] transition hover:scale-[1.02]"
+            href={localizePath("/posts/", locale)}
+          >
+            {t("home.cta")}
+          </a>
+        </div>
+      </div>
+      <div class="glass-panel rounded-[2rem] p-7">
+        <p class="eyebrow mb-4">{t("home.experience")}</p>
+        <div class="h-[28rem] space-y-4 overflow-y-auto pr-2 md:h-[36rem]">
+          {localizedExperiences.map((experience) => (
+            <article class="border-b border-[color:var(--line)] pb-4 last:border-b-0 last:pb-0">
+              <div class="flex items-start justify-between gap-4">
+                <h2 class="text-base font-semibold text-[color:var(--foreground)]">
+                  {experience.company ?? experience.title}
+                </h2>
+                <span class="shrink-0 text-xs uppercase tracking-[0.14em] text-[color:var(--muted)]">
+                  {experience.startDate} - {experience.endDate}
+                </span>
+              </div>
+              <p class="mt-2 text-sm leading-7 text-[color:var(--muted)]">{experience.title}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <div class="mb-8 flex items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow mb-3">{t("home.recentEyebrow")}</p>
+        <h2 class="text-3xl font-semibold tracking-tight">{t("home.recentHeading")}</h2>
+      </div>
+      <a class="text-sm font-semibold text-[color:var(--accent)]" href={localizePath("/posts/", locale)}>
+        {t("home.browseArchive")}
+      </a>
+    </div>
+    <div class="grid gap-6 lg:grid-cols-2">
+      {posts.map((entry) => <PostCard entry={entry} locale={locale} />)}
+    </div>
+  </section>
+</BaseLayout>
