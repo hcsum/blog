@@ -12,7 +12,7 @@ interface Demo {
   titleKey: UIKey;
   blurbKey: UIKey;
   tag: string;
-  Component: ComponentType;
+  Component: ComponentType<{ lang?: Locale }>;
 }
 
 const DEMOS: Demo[] = [
@@ -80,7 +80,7 @@ export default function LabGallery({ lang = DEFAULT_LOCALE }: LabGalleryProps) {
                 </p>
               </div>
               <div className="glass-panel mt-6 overflow-hidden rounded-[2rem] p-4">
-                <DemoComponent />
+                <DemoComponent lang={lang} />
               </div>
             </section>
           );

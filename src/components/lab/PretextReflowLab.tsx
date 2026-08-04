@@ -3,11 +3,14 @@
 import { layoutWithLines, prepareWithSegments } from "@chenglou/pretext";
 import Matter from "matter-js";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
+import { useTranslations, type UIKey } from "@/i18n/ui";
 
 type TodoStatus = "active" | "falling" | "restoring" | "removed";
 type PieceMode = "falling" | "restoring";
 
 interface TodoItem {
+  textKey?: UIKey;
   id: string;
   text: string;
   status: TodoStatus;
@@ -38,17 +41,9 @@ interface Piece {
 }
 
 const INITIAL_TODOS: TodoItem[] = [
-  { id: "ship", text: "Ship the thing", status: "active" },
-  {
-    id: "article",
-    text: "Read the article I've had open in a tab since last month",
-    status: "active",
-  },
-  {
-    id: "email",
-    text: "Reply to the email I keep dodging",
-    status: "active",
-  },
+  { id: "ship", text: "", textKey: "lab.demo.todo1", status: "active" },
+  { id: "article", text: "", textKey: "lab.demo.todo2", status: "active" },
+  { id: "email", text: "", textKey: "lab.demo.todo3", status: "active" },
 ];
 
 const FONT = "600 17px Inter";
@@ -66,8 +61,17 @@ const easeInOut = (t: number) =>
   t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
-export default function PretextReflowLab() {
-  const [todos, setTodos] = useState<TodoItem[]>(INITIAL_TODOS);
+interface PretextReflowLabProps {
+  lang?: Locale;
+}
+
+export default function PretextReflowLab({ lang = DEFAULT_LOCALE }: PretextReflowLabProps) {
+  const t = useTranslations(lang);
+  const initialTodos = useMemo(
+    () => INITIAL_TODOS.map((todo) => ({ ...todo, text: todo.textKey ? t(todo.textKey) : todo.text })),
+    [t],
+  );
+  const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
   const [renderIds, setRenderIds] = useState<string[]>([]);
   const [undoStack, setUndoStack] = useState<string[]>([]);
   const [fontsReady, setFontsReady] = useState(false);
@@ -428,7 +432,7 @@ export default function PretextReflowLab() {
     elsRef.current.clear();
     setRenderIds([]);
     setUndoStack([]);
-    setTodos(INITIAL_TODOS);
+    setTodos(initialTodos);
   }
 
   // ── render ───────────────────────────────────────────────────────
@@ -488,7 +492,7 @@ export default function PretextReflowLab() {
               className="text-[0.62rem] font-bold uppercase tracking-[0.22em]"
               style={{ color: "var(--accent)" }}
             >
-              Gravity todo
+              {t("lab.demo.gravityTodo")}
             </p>
             <h3
               className="mt-1 text-lg font-semibold"
@@ -509,7 +513,7 @@ export default function PretextReflowLab() {
                 color: nextUndoId ? "var(--accent)" : "var(--muted)",
               }}
             >
-              Undo
+              {t("lab.demo.undo")}
             </button>
             <button
               type="button"
@@ -517,7 +521,7 @@ export default function PretextReflowLab() {
               className="rounded-full border px-3.5 py-1.5 text-sm font-medium transition"
               style={{ borderColor: "var(--line)", color: "var(--muted)" }}
             >
-              Reset
+              {t("lab.demo.reset")}
             </button>
           </div>
         </header>
@@ -529,6 +533,7 @@ export default function PretextReflowLab() {
               <TodoRow
                 key={todo.id}
                 todo={todo}
+                doneLabel={t("lab.demo.markDone").replace("{todo}", todo.text)}
                 height={layout?.height ?? LINE_HEIGHT}
                 onDone={() => markDone(todo.id)}
                 registerText={(el) => {
@@ -544,7 +549,7 @@ export default function PretextReflowLab() {
               className="py-10 text-center text-sm"
               style={{ color: "var(--muted)" }}
             >
-              All done — nothing left to do.
+              {t("lab.demo.allDone")}
             </div>
           )}
         </div>
@@ -555,11 +560,13 @@ export default function PretextReflowLab() {
 
 function TodoRow({
   todo,
+  doneLabel,
   height,
   onDone,
   registerText,
 }: {
   todo: TodoItem;
+  doneLabel: string;
   height: number;
   onDone: () => void;
   registerText: (el: HTMLElement | null) => void;
@@ -584,7 +591,7 @@ function TodoRow({
         type="button"
         onClick={onDone}
         disabled={!isActive}
-        aria-label={`Mark "${todo.text}" done`}
+        aria-label={doneLabel}
         className={`group flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left transition ${
           isActive ? "cursor-pointer hover:border-[color:var(--accent)]" : ""
         }`}

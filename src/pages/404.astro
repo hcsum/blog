@@ -1,0 +1,31 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+// GitHub Pages serves one 404.html for every path, so this page can't know the
+// locale of the URL that missed. It shows both languages instead.
+---
+
+<BaseLayout locale="en" title="Page not found | Haochen Xu" description="This page doesn't exist.">
+  <section class="mx-auto max-w-3xl px-5 py-24">
+    <p class="eyebrow mb-4">404</p>
+    <h1 class="text-4xl font-semibold tracking-tight md:text-5xl">Page not found</h1>
+    <p class="mt-4 text-lg leading-8 text-[color:var(--muted)]">
+      That URL doesn't exist. Try the posts archive or start from the home page.
+    </p>
+    <div class="mt-6 flex flex-wrap gap-4">
+      <a class="text-sm font-semibold text-[color:var(--accent)]" href="/">Home</a>
+      <a class="text-sm font-semibold text-[color:var(--accent)]" href="/posts/">Posts</a>
+    </div>
+
+    <hr class="my-12 border-[color:var(--line)]" />
+
+    <h2 class="text-3xl font-semibold tracking-tight" lang="zh-CN">页面不存在</h2>
+    <p class="mt-4 text-lg leading-8 text-[color:var(--muted)]" lang="zh-CN">
+      这个地址没有对应的页面。可以去文章列表看看，或者回到首页。
+    </p>
+    <div class="mt-6 flex flex-wrap gap-4" lang="zh-CN">
+      <a class="text-sm font-semibold text-[color:var(--accent)]" href="/zh/">首页</a>
+      <a class="text-sm font-semibold text-[color:var(--accent)]" href="/zh/posts/">文章</a>
+    </div>
+  </section>
+</BaseLayout>

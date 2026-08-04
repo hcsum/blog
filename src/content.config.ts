@@ -17,7 +17,8 @@ const blog = defineCollection({
     date: z.coerce.date().optional(),
     tags: z.array(z.string()).optional(),
     bilingual: z.boolean().optional().default(false),
-    defaultLang: z.enum(["zh", "en"]).optional().default("en"),
+    // Kept for existing frontmatter; the route decides which language block renders.
+    defaultLang: z.enum(["zh", "en"]).optional(),
     draft: z.boolean().optional().default(false),
   }),
 });

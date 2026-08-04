@@ -9,6 +9,7 @@ function pick(map: LocaleStatusMap, locale: Locale, key: string, fallbackKey = "
 
 const ACTIVITY: LocaleStatusMap = {
   en: {
+    active: "Active",
     deployment: "Deploying update",
     received: "Task received",
     queued: "Task queued",
@@ -25,6 +26,7 @@ const ACTIVITY: LocaleStatusMap = {
     default: "Agent unavailable",
   },
   zh: {
+    active: "活跃",
     deployment: "正在部署更新",
     received: "已接收任务",
     queued: "任务排队中",
@@ -44,6 +46,7 @@ const ACTIVITY: LocaleStatusMap = {
 
 const FALLBACK_TITLE: LocaleStatusMap = {
   en: {
+    active: "Agent active",
     offline: "Agent offline",
     stale: "Heartbeat delayed",
     deployment: "Deploying a fresh build",
@@ -60,6 +63,7 @@ const FALLBACK_TITLE: LocaleStatusMap = {
     default: "Agent unavailable",
   },
   zh: {
+    active: "Agent 活跃",
     offline: "Agent 离线",
     stale: "心跳延迟",
     deployment: "正在部署新构建",
@@ -79,6 +83,7 @@ const FALLBACK_TITLE: LocaleStatusMap = {
 
 const FALLBACK_SUMMARY: LocaleStatusMap = {
   en: {
+    active: "The agent is handling a task right now.",
     offlinePresence:
       "The local machine is not heartbeating right now. The last visible task state may no longer be current.",
     stalePresence:
@@ -101,6 +106,7 @@ const FALLBACK_SUMMARY: LocaleStatusMap = {
     default: "The agent status is currently unavailable.",
   },
   zh: {
+    active: "Agent 正在处理任务。",
     offlinePresence: "本地机器现在没有在发心跳，最后看到的任务状态可能已经不是当前状态。",
     stalePresence: "心跳晚了。Agent 可能还在跑，但这个公开快照可能已经过时。",
     offline: "本地机器当前不可达。把它当成机器层面的缺席，而不是任务失败。",
@@ -139,6 +145,8 @@ const MISC: LocaleStatusMap = {
 };
 
 export const activityLabel = (locale: Locale, key: string) => pick(ACTIVITY, locale, key);
+/** Returns undefined for statuses the dictionary doesn't cover, so callers can humanise instead. */
+export const optionalActivityLabel = (locale: Locale, key: string) => ACTIVITY[locale]?.[key];
 export const fallbackTitle = (locale: Locale, key: string) => pick(FALLBACK_TITLE, locale, key);
 export const fallbackSummary = (locale: Locale, key: string) => pick(FALLBACK_SUMMARY, locale, key);
 export const presenceLabel = (locale: Locale, key: string) => pick(PRESENCE, locale, key);

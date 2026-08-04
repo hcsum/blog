@@ -63,6 +63,15 @@ export const ui = {
     "lab.tilt.description":
       "A no-dependency DOM trick: perspective transforms follow the cursor while a specular glare tracks it across the surface.",
 
+    "lab.demo.gravityTodo": "Gravity todo",
+    "lab.demo.undo": "Undo",
+    "lab.demo.reset": "Reset",
+    "lab.demo.allDone": "All done — nothing left to do.",
+    "lab.demo.markDone": "Mark \"{todo}\" done",
+    "lab.demo.todo1": "Ship the thing",
+    "lab.demo.todo2": "Read the article I've had open in a tab since last month",
+    "lab.demo.todo3": "Reply to the email I keep dodging",
+
     "agent.title": "Agent Status | Haochen Xu",
     "agent.description":
       "A public status panel backed by the agent's Workers status surface, showing current state and recent activity.",
@@ -79,6 +88,7 @@ export const ui = {
     "agent.stat.waiting": "Waiting",
 
     "agent.chip.status": "Agent Status",
+    "agent.chip.lastKnown": "Last known",
     "agent.unavailable.title": "Agent unavailable",
     "agent.unavailable.summary":
       "The current status snapshot could not be fetched. Try again once the public status surface is reachable.",
@@ -188,6 +198,15 @@ export const ui = {
     "lab.tilt.description":
       "一个零依赖的 DOM 小把戏：透视变换跟着光标走，同时一道高光在表面上追着它移动。",
 
+    "lab.demo.gravityTodo": "重力待办",
+    "lab.demo.undo": "撤销",
+    "lab.demo.reset": "重置",
+    "lab.demo.allDone": "都做完了 —— 没有剩下的了。",
+    "lab.demo.markDone": "把「{todo}」标记为完成",
+    "lab.demo.todo1": "把东西发出去",
+    "lab.demo.todo2": "读那篇从上个月起就一直开着标签页的文章",
+    "lab.demo.todo3": "回那封我一直在躲的邮件",
+
     "agent.title": "Agent 状态 | Haochen Xu",
     "agent.description": "一个公开的状态面板，数据来自 agent 的 Workers 状态接口，展示当前状态和近期活动。",
     "agent.intro":
@@ -203,6 +222,7 @@ export const ui = {
     "agent.stat.waiting": "等待中",
 
     "agent.chip.status": "Agent 状态",
+    "agent.chip.lastKnown": "最后已知状态",
     "agent.unavailable.title": "Agent 不可用",
     "agent.unavailable.summary": "拿不到当前的状态快照。等公开状态接口恢复可达之后再试。",
 

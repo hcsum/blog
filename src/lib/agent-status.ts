@@ -4,6 +4,7 @@ import {
   fallbackSummary,
   fallbackTitle,
   miscLabel,
+  optionalActivityLabel,
   presenceLabel,
 } from "@/i18n/agent-status";
 import { useSyncExternalStore } from "react";
@@ -758,9 +759,8 @@ export function getEventTone(event: AgentEvent): AgentStatusTone {
 export function getStatusChipLabel(status?: string | null, locale: Locale = DEFAULT_LOCALE) {
   const normalized = normalizeStatus(status);
   if (!normalized) return miscLabel(locale, "chipUnavailable");
-  if (locale !== DEFAULT_LOCALE) return activityLabel(locale, normalized);
 
-  return humanizeStatus(normalized);
+  return optionalActivityLabel(locale, normalized) ?? humanizeStatus(normalized);
 }
 
 export function getEventTypeLabel(type: string) {

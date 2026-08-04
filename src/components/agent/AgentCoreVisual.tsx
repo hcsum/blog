@@ -455,7 +455,7 @@ export default function AgentCoreVisual({
           </div>
           {showLastKnownStatus ? (
             <p className="mt-3 text-xs uppercase tracking-[0.22em] text-[color:var(--muted)]">
-              {t("agent.stat.presence")}: {formatPresenceLabel(presence, lang)} · {getStatusChipLabel(lastKnownStatus, lang)}
+              {t("agent.stat.presence")}: {formatPresenceLabel(presence, lang)} · {t("agent.chip.lastKnown")}: {getStatusChipLabel(lastKnownStatus, lang)}
             </p>
           ) : null}
           <h2 className="agent-display mt-5 text-3xl font-bold tracking-[-0.03em] text-[color:var(--foreground)] md:text-5xl">
