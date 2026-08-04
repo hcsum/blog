@@ -45,23 +45,17 @@ export const ui = {
 
     "lab.title": "Lab | Haochen Xu",
     "lab.description":
-      "A small lab of interactive frontend experiments — WebGL scenes, CSS tricks, and other browser-only toys.",
+      "A small lab of interactive frontend experiments — browser-only toys.",
     "lab.eyebrow": "Lab",
     "lab.heading": "Small things I build for fun.",
     "lab.intro":
-      "A growing shelf of interactive frontend experiments — WebGL scenes, CSS tricks, and other browser-only toys. Pick one and poke at it.",
+      "A growing shelf of interactive frontend experiments, all browser-only. Pick one and poke at it.",
     "lab.prev": "Previous",
     "lab.next": "Next",
 
     "lab.pretext.title": "Gravity todo list",
     "lab.pretext.description":
       "A small @chenglou/pretext experiment: every todo is measured as real multiline text, so checking one off breaks it into letters that drop and pile up below. Undo lifts them back into place.",
-    "lab.planet.title": "A tiny low-poly planet",
-    "lab.planet.description":
-      "A procedural mini-world — an icosphere pushed into hills, a shell of water, cone-trees and drifting clouds, all generated in code. Drag to orbit; it turns on its own.",
-    "lab.tilt.title": "Pointer-driven 3D tilt",
-    "lab.tilt.description":
-      "A no-dependency DOM trick: perspective transforms follow the cursor while a specular glare tracks it across the surface.",
 
     "lab.demo.gravityTodo": "Gravity todo",
     "lab.demo.undo": "Undo",
@@ -140,12 +134,12 @@ export const ui = {
   },
 
   zh: {
-    "site.title": "Haochen Xu | 写作、实验与网页手艺",
+    "site.title": "Haochen Xu | 写作、实验与 web craft",
     "site.description": "Haochen Xu 的个人网站：关于软件的写作、工程笔记，以及前端实验。",
     "site.name": "Haochen Xu",
 
     "nav.posts": "文章",
-    "nav.lab": "实验室",
+    "nav.lab": "Lab",
     "nav.language": "语言",
     "nav.switchTo": "EN",
 
@@ -179,24 +173,17 @@ export const ui = {
     "posts.onThisPage": "本页目录",
     "posts.noTranslation": "这篇还没有中文版，下面是英文原文。",
 
-    "lab.title": "实验室 | Haochen Xu",
-    "lab.description": "一个小小的前端实验室 —— WebGL 场景、CSS 小把戏，以及只跑在浏览器里的玩具。",
-    "lab.eyebrow": "实验室",
+    "lab.title": "Lab | Haochen Xu",
+    "lab.description": "一个小小的前端 Lab —— 只跑在浏览器里的交互实验。",
+    "lab.eyebrow": "Lab",
     "lab.heading": "我为了好玩做的小东西。",
-    "lab.intro":
-      "一个不断长大的前端实验架子 —— WebGL 场景、CSS 小把戏，以及只跑在浏览器里的玩具。挑一个，动手玩玩。",
+    "lab.intro": "一个不断长大的前端实验架子，都是只跑在浏览器里的小东西。挑一个，动手玩玩。",
     "lab.prev": "上一页",
     "lab.next": "下一页",
 
     "lab.pretext.title": "有重力的待办清单",
     "lab.pretext.description":
       "一个 @chenglou/pretext 的小实验：每条待办都按真实的多行文本来度量，所以勾掉一条时它会碎成字母掉下去，堆在下面。撤销会把它们重新捡回原位。",
-    "lab.planet.title": "一颗低多边形小星球",
-    "lab.planet.description":
-      "一个程序生成的小世界 —— 一颗被推挤出丘陵的 icosphere、一层水壳、圆锥树和飘着的云，全部由代码生成。拖动可以环绕观察，它自己也会转。",
-    "lab.tilt.title": "跟着指针的 3D 倾斜",
-    "lab.tilt.description":
-      "一个零依赖的 DOM 小把戏：透视变换跟着光标走，同时一道高光在表面上追着它移动。",
 
     "lab.demo.gravityTodo": "重力待办",
     "lab.demo.undo": "撤销",
@@ -222,7 +209,7 @@ export const ui = {
     "agent.stat.waiting": "等待中",
 
     "agent.chip.status": "Agent 状态",
-    "agent.chip.lastKnown": "最后已知状态",
+    "agent.chip.lastKnown": "上次状态",
     "agent.unavailable.title": "Agent 不可用",
     "agent.unavailable.summary": "拿不到当前的状态快照。等公开状态接口恢复可达之后再试。",
 
@@ -249,19 +236,19 @@ export const ui = {
     "agent.status.unknown": "Agent 不可用",
 
     "agent.presence.online": "在线",
-    "agent.presence.stale": "陈旧",
+    "agent.presence.stale": "延迟",
     "agent.presence.offline": "离线",
 
-    "agent.header.unavailable": "AGENT 不可用",
-    "agent.header.offline": "AGENT 离线",
-    "agent.header.stale": "AGENT 陈旧",
-    "agent.header.idle": "AGENT 空闲",
-    "agent.header.researching": "AGENT 调研中",
-    "agent.header.responding": "AGENT 回复中",
-    "agent.header.learning": "AGENT 学习中",
-    "agent.header.updating": "AGENT 更新中",
-    "agent.header.degraded": "AGENT 降级",
-    "agent.header.active": "AGENT 活跃",
+    "agent.header.unavailable": "AGENT UNAVAILABLE",
+    "agent.header.offline": "AGENT OFFLINE",
+    "agent.header.stale": "AGENT STALE",
+    "agent.header.idle": "AGENT IDLE",
+    "agent.header.researching": "AGENT RESEARCHING",
+    "agent.header.responding": "AGENT RESPONDING",
+    "agent.header.learning": "AGENT LEARNING",
+    "agent.header.updating": "AGENT UPDATING",
+    "agent.header.degraded": "AGENT DEGRADED",
+    "agent.header.active": "AGENT ACTIVE",
     "agent.header.feed": "公开状态源",
 
     "rss.title": "Haochen Xu",

@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, type ComponentType } from "react";
-import MiniPlanet from "@/components/lab/MiniPlanet";
 import PretextReflowLab from "@/components/lab/PretextReflowLab";
-import TiltCard from "@/components/lab/TiltCard";
 import { DEFAULT_LOCALE, type Locale } from "@/i18n/config";
 import { useTranslations, type UIKey } from "@/i18n/ui";
 
@@ -22,20 +20,6 @@ const DEMOS: Demo[] = [
     blurbKey: "lab.pretext.description",
     tag: "Todo · Pretext",
     Component: PretextReflowLab,
-  },
-  {
-    id: "planet",
-    titleKey: "lab.planet.title",
-    blurbKey: "lab.planet.description",
-    tag: "WebGL · three.js",
-    Component: MiniPlanet,
-  },
-  {
-    id: "tilt",
-    titleKey: "lab.tilt.title",
-    blurbKey: "lab.tilt.description",
-    tag: "CSS · Pointer",
-    Component: TiltCard,
   },
 ];
 

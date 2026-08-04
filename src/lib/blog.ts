@@ -30,9 +30,6 @@ const TAXONOMY_ACRONYMS: Record<string, string> = {
 const SECTION_LABELS: Record<string, Partial<Record<Locale, string>>> = {
   Agent: { zh: "Agent" },
   Thoughts: { zh: "随想" },
-  DB: { zh: "数据库" },
-  DSA: { zh: "数据结构与算法" },
-  JS: { zh: "JS" },
   Notes: { zh: "笔记" },
 };
 
