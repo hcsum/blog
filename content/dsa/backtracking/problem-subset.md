@@ -1,9 +1,8 @@
 ---
+title: "Backtracking 🤯"
 date: 2025-01-24
 draft: true
 ---
-
-# Backtracking 🤯
 
 https://leetcode.com/problems/subsets/
 

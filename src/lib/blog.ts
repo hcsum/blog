@@ -72,6 +72,28 @@ export function getPostMeta(entry: BlogEntry, locale: Locale = DEFAULT_LOCALE): 
   };
 }
 
+/**
+ * A bilingual post keeps its zh block first and its en block second, and the two
+ * blocks share one flat heading list. Count the headings that sit before the en
+ * block so a caller can slice that list per locale.
+ */
+export function countHeadingsBeforeEnBlock(body: string) {
+  let inFence = false;
+  let count = 0;
+
+  for (const line of body.split("\n")) {
+    if (/^\s*(```|~~~)/.test(line)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    if (/^<div\s+data-lang="en"/.test(line.trim())) return count;
+    if (/^#{1,6}\s+/.test(line) || /^\s*<h[1-6][\s>]/i.test(line)) count += 1;
+  }
+
+  return count;
+}
+
 export function sortPosts(entries: BlogEntry[]) {
   return [...entries].sort((left, right) => {
     const leftTime = getPostMeta(left).publishedAt?.getTime() ?? 0;

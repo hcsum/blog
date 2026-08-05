@@ -1,9 +1,8 @@
 ---
+title: "Real-world Problem"
 date: 2024-05-09
 draft: true
 ---
-
-# Real-world Problem
 
 ## Part 1: Static File
 

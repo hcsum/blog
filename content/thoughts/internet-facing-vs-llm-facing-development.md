@@ -1,8 +1,7 @@
 ---
+title: "🧠 What Should LLM-Facing Developers Know?"
 date: 2024-10-11
 ---
-
-# 🧠 What Should LLM-Facing Developers Know?
 
 > If building for the internet was the mainstream in the past 20 years, building for LLMs might be the future.
 
@@ -65,7 +64,7 @@ And what they're not good at:
 - Know key open-source models (LLaMA, Mistral, GPT series) and how to choose between them
 - Try deploying local models (Ollama, LM Studio, llama.cpp) for testing and dev
 
-# 互联网开发者 vs LLM开发者：类比与知识体系
+## 互联网开发者 vs LLM开发者：类比与知识体系
 
 互联网开发者并不需要掌握网络协议的全部实现细节，但需要理解它的基本工作方式、模式和限制；同理，未来如果LLM成为基础设施级别的技术，开发者也许需要掌握"面向LLM开发"的基本理念和接口，而不必掌握模型的底层实现。
 

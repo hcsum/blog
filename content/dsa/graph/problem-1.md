@@ -1,9 +1,8 @@
 ---
+title: "Problem"
 date: 2024-05-05
 draft: true
 ---
-
-# Problem
 
 - Write a function that takes in an array of flight objects, a fare limit, and a flight origin,
 - return an array of flight destinations that with the fare not higher than the fare limit.

@@ -2,7 +2,7 @@
 import { render } from "astro:content";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import TableOfContents from "@/components/TableOfContents.astro";
-import { formatDate, getPostMeta, type BlogEntry } from "@/lib/blog";
+import { countHeadingsBeforeEnBlock, formatDate, getPostMeta, type BlogEntry } from "@/lib/blog";
 import { localizePath, type Locale } from "@/i18n/config";
 import { useTranslations } from "@/i18n/ui";
 
@@ -17,21 +17,15 @@ const meta = getPostMeta(post, locale);
 const { Content, headings } = await render(post);
 const isBilingual = meta.bilingual;
 
-// Bilingual posts store `# zh` then `# en` as two top-level blocks; slice the TOC
-// to the block that matches the current locale.
-const h1Indexes = headings.reduce<number[]>((indexes, heading, index) => {
-  if (heading.depth === 1) {
-    indexes.push(index);
-  }
-  return indexes;
-}, []);
+// A bilingual post carries a zh block and an en block in one body, so the flat
+// heading list covers both; slice it to the block matching the current locale.
+const enBlockStart = isBilingual ? countHeadingsBeforeEnBlock(post.body ?? "") : 0;
 const inRange = (heading: { depth: number }) => heading.depth >= 2 && heading.depth <= 3;
 const tocHeadings =
-  isBilingual && h1Indexes.length >= 2
-    ? (locale === "zh"
-        ? headings.slice(h1Indexes[0] + 1, h1Indexes[1])
-        : headings.slice(h1Indexes[1] + 1)
-      ).filter(inRange)
+  isBilingual && enBlockStart > 0 && enBlockStart < headings.length
+    ? (locale === "zh" ? headings.slice(0, enBlockStart) : headings.slice(enBlockStart)).filter(
+        inRange,
+      )
     : headings.filter(inRange);
 ---
 

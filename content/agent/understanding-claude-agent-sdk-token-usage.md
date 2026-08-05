@@ -16,8 +16,6 @@ draft: false
 
 <div data-lang="zh">
 
-# 几个 Claude Agent SDK 回合为什么会用完 5-hour limit
-
 ## 起因
 
 我在用 Gmail Bridge 跟 agent 对话时，会直接给它发邮件或转发资料；后台由 Claude Agent SDK 调起 Claude Code，读 notes、查资料、调用工具，然后把结果回给我。
@@ -425,8 +423,6 @@ Agent loop 产生了 44 次 assistant model calls
 </div>
 
 <div data-lang="en">
-
-# Why a Few Claude Agent SDK Turns Used Up My 5-Hour Limit
 
 ## Starting Point
 

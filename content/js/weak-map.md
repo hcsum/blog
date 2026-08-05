@@ -1,9 +1,8 @@
 ---
+title: "WeakMap and WeakSet"
 date: 2024-11-08
 draft: true
 ---
-
-# WeakMap and WeakSet
 
 [A good explanation of weakmap use case](https://www.youtube.com/watch?v=bLmHYji0Bxw)
 

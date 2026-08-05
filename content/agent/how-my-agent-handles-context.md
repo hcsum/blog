@@ -16,8 +16,6 @@ draft: false
 
 <div data-lang="zh">
 
-# 把 context 当易耗品，把记忆当资产
-
 ## 太长不读
 
 我给自己跑了一个常驻的个人 agent。用久了我得出一个很朴素的原则：**上下文（context）是易耗品，记忆才是资产，这两件事要分开管。**
@@ -160,8 +158,6 @@ draft: false
 </div>
 
 <div data-lang="en">
-
-# Treat Context as Disposable, Memory as an Asset
 
 ## TL;DR
 

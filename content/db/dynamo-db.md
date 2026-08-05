@@ -1,8 +1,7 @@
 ---
+title: "DynamoDB"
 date: 2024-05-20
 ---
-
-# DynamoDB
 
 It is a key-value store like an object.
 

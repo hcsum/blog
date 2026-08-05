@@ -1,9 +1,8 @@
 ---
+title: "I ask ChatGPT to explain the mouse in the maze problem"
 date: 2024-07-22
 draft: true
 ---
-
-# I ask ChatGPT to explain the mouse in the maze problem
 
 ### Me:
 
