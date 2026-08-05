@@ -19,6 +19,8 @@ const ACTIVITY: LocaleStatusMap = {
     knowledge: "Updating knowledge",
     completed: "Task completed",
     delivered: "Report delivered",
+    waiting: "Waiting on input",
+    error: "Attention required",
     failed: "Attention required",
     idle: "Agent idle",
     offlinePresence: "Agent offline",
@@ -36,6 +38,8 @@ const ACTIVITY: LocaleStatusMap = {
     knowledge: "正在更新知识库",
     completed: "任务已完成",
     delivered: "报告已送达",
+    waiting: "等待输入",
+    error: "需要关注",
     failed: "需要关注",
     idle: "Agent 空闲",
     offlinePresence: "Agent 离线",
@@ -58,6 +62,8 @@ const FALLBACK_TITLE: LocaleStatusMap = {
     knowledge: "Updating its knowledge",
     completed: "Task completed",
     delivered: "Report delivered",
+    waiting: "Waiting on a reply",
+    error: "Task failed safely",
     failed: "Task failed safely",
     idle: "Agent idle",
     default: "Agent unavailable",
@@ -75,6 +81,8 @@ const FALLBACK_TITLE: LocaleStatusMap = {
     knowledge: "正在更新知识库",
     completed: "任务已完成",
     delivered: "报告已送达",
+    waiting: "在等一个回复",
+    error: "任务已安全中止",
     failed: "任务已安全中止",
     idle: "Agent 空闲",
     default: "Agent 不可用",
@@ -100,6 +108,9 @@ const FALLBACK_SUMMARY: LocaleStatusMap = {
     knowledge: "The agent is updating its persistent knowledge layer.",
     completed: "The last task finished cleanly. The agent is wrapping up.",
     delivered: "A scheduled brief was delivered successfully.",
+    waiting: "The agent paused and is waiting on a permission approval or a follow-up answer.",
+    error:
+      "The last task hit a recoverable error and stopped safely. Details are intentionally sanitized.",
     failed:
       "The last task hit a recoverable error and stopped safely. Details are intentionally sanitized.",
     idle: "No task is currently running. The agent is waiting for the next workload to enter its orbit.",
@@ -120,9 +131,56 @@ const FALLBACK_SUMMARY: LocaleStatusMap = {
     knowledge: "Agent 正在更新自己的长期知识层。",
     completed: "上一个任务顺利结束，Agent 正在收尾。",
     delivered: "一份定时简报已经发出去了。",
+    waiting: "Agent 停在等待里，要么在等一次授权确认，要么在等一个追问的回复。",
+    error: "上一个任务碰到一个可恢复的错误，已经安全停下。细节做了脱敏处理。",
     failed: "上一个任务碰到一个可恢复的错误，已经安全停下。细节做了脱敏处理。",
     idle: "当前没有任务在跑，Agent 在等下一件事。",
     default: "当前取不到 Agent 状态。",
+  },
+};
+
+/**
+ * Event cards used to be headlined by `event.title`, which the bridge sets to
+ * the channel name — so every Gmail-sourced event read "Gmail". The event type
+ * is the part that actually differs, so it headlines the card and the channel
+ * moves down into the chip row.
+ */
+const EVENT_TYPE: LocaleStatusMap = {
+  en: {
+    deployment: "Deployment",
+    agent_idle: "Agent idle",
+    task_received: "Task received",
+    task_queued: "Task queued",
+    task_started: "Task started",
+    task_waiting: "Waiting on input",
+    skill_loaded: "Skill loaded",
+    research_started: "Research started",
+    web_data_started: "Web data collected",
+    draft_started: "Draft started",
+    knowledge_update_started: "Knowledge updated",
+    scheduled_report_started: "Scheduled report started",
+    task_completed: "Task completed",
+    task_failed: "Task failed",
+    report_delivered: "Response delivered",
+    default: "",
+  },
+  zh: {
+    deployment: "部署",
+    agent_idle: "Agent 空闲",
+    task_received: "收到任务",
+    task_queued: "任务排队",
+    task_started: "任务开始",
+    task_waiting: "等待输入",
+    skill_loaded: "载入 skill",
+    research_started: "开始调研",
+    web_data_started: "抓取网页数据",
+    draft_started: "开始起草",
+    knowledge_update_started: "更新知识库",
+    scheduled_report_started: "定时报告开始",
+    task_completed: "任务完成",
+    task_failed: "任务失败",
+    report_delivered: "回复已送达",
+    default: "",
   },
 };
 
@@ -149,5 +207,7 @@ export const activityLabel = (locale: Locale, key: string) => pick(ACTIVITY, loc
 export const optionalActivityLabel = (locale: Locale, key: string) => ACTIVITY[locale]?.[key];
 export const fallbackTitle = (locale: Locale, key: string) => pick(FALLBACK_TITLE, locale, key);
 export const fallbackSummary = (locale: Locale, key: string) => pick(FALLBACK_SUMMARY, locale, key);
+/** Returns undefined for event types the dictionary doesn't cover, so callers can humanise instead. */
+export const optionalEventTypeLabel = (locale: Locale, key: string) => EVENT_TYPE[locale]?.[key];
 export const presenceLabel = (locale: Locale, key: string) => pick(PRESENCE, locale, key);
 export const miscLabel = (locale: Locale, key: string) => pick(MISC, locale, key);

@@ -44,6 +44,7 @@ const toneFallbacks: Record<AgentStatusTone, string> = {
   knowledge: "#5eead4",
   deployment: "#a78bfa",
   failed: "#fb7185",
+  waiting: "#facc15",
   stale: "#f59e0b",
   offline: "#94a3b8",
   unavailable: "#94a3b8",
@@ -364,6 +365,7 @@ export default function AgentCoreVisual({
           secondary: "#ccfbf1",
         };
         break;
+      case "error":
       case "failed":
         visualStateRef.current = {
           pulseSpeed: 0.7,
@@ -375,6 +377,18 @@ export default function AgentCoreVisual({
           secondary: "#fecdd3",
         };
         break;
+      case "waiting":
+        visualStateRef.current = {
+          pulseSpeed: 0.66,
+          wobble: 0.045,
+          shellOpacity: 0.16,
+          ringSpeed: 0.2,
+          particleDrift: 0.16,
+          accent: meta.accent,
+          secondary: "#fef08a",
+        };
+        break;
+      case "active":
       case "running":
       case "queued":
       case "received":
@@ -402,7 +416,7 @@ export default function AgentCoreVisual({
         };
         break;
       default:
-        if (presence !== "online" && normalized !== "failed") {
+        if (presence !== "online" && normalized !== "failed" && normalized !== "error") {
           visualStateRef.current = {
             pulseSpeed: 0.42,
             wobble: presence === "stale" ? 0.03 : 0.018,

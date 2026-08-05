@@ -9,6 +9,7 @@ import {
   formatPresenceLabel,
   formatTaskTypeLabel,
   getEventTone,
+  getEventTypeLabel,
   getStatusChipLabel,
   getToneMeta,
 } from "@/lib/agent-status";
@@ -219,6 +220,10 @@ function VirtualEventCard({ event, isNew, lang, onHeightChange, top }: VirtualEv
   const taskType = formatTaskTypeLabel(event.taskType);
   const duration = formatDuration(event.durationMs);
   const isIdle = event.type === "agent_idle";
+  const headline = getEventTypeLabel(event.type, lang);
+  // `event.title` is the channel name ("Gmail", "OpenCode", …). It only earns a
+  // chip when it adds something the headline doesn't already say.
+  const channel = event.title && event.title !== headline ? event.title : null;
 
   useEffect(() => {
     const element = cardRef.current;
@@ -269,7 +274,7 @@ function VirtualEventCard({ event, isNew, lang, onHeightChange, top }: VirtualEv
         </div>
 
         <h3 className="agent-display mt-4 text-lg font-semibold tracking-tight text-[color:var(--foreground)]">
-          {event.title}
+          {headline}
         </h3>
 
         {event.summary ? (
@@ -277,6 +282,7 @@ function VirtualEventCard({ event, isNew, lang, onHeightChange, top }: VirtualEv
         ) : null}
 
         <div className="mt-4 flex flex-wrap gap-2">
+          {channel ? <span className="agent-subchip">{channel}</span> : null}
           {taskType ? <span className="agent-subchip">{taskType}</span> : null}
           {duration ? <span className="agent-subchip">{duration}</span> : null}
         </div>

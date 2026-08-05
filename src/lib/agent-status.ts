@@ -5,6 +5,7 @@ import {
   fallbackTitle,
   miscLabel,
   optionalActivityLabel,
+  optionalEventTypeLabel,
   presenceLabel,
 } from "@/i18n/agent-status";
 import { useSyncExternalStore } from "react";
@@ -72,6 +73,7 @@ export type AgentStatusTone =
   | "knowledge"
   | "deployment"
   | "failed"
+  | "waiting"
   | "stale"
   | "offline"
   | "unavailable";
@@ -116,12 +118,17 @@ const toneMetaMap: Record<AgentStatusTone, ToneMeta> = {
   knowledge: { accent: "#5eead4", glow: "rgba(94, 234, 212, 0.34)", ink: "#062623" },
   deployment: { accent: "#a78bfa", glow: "rgba(167, 139, 250, 0.34)", ink: "#1a1133" },
   failed: { accent: "#fb7185", glow: "rgba(251, 113, 133, 0.34)", ink: "#350b17" },
+  waiting: { accent: "#facc15", glow: "rgba(250, 204, 21, 0.3)", ink: "#2b1f03" },
   stale: { accent: "#f59e0b", glow: "rgba(245, 158, 11, 0.3)", ink: "#311b04" },
   offline: { accent: "#94a3b8", glow: "rgba(148, 163, 184, 0.22)", ink: "#111827" },
   unavailable: { accent: "#94a3b8", glow: "rgba(148, 163, 184, 0.24)", ink: "#111827" },
 };
 
+// Keep this in sync with the statuses the agent bridge actually publishes
+// (`public-activity.ts` emits active / idle / waiting / error) plus the finer
+// grained ones the mock frames and older payloads use.
 const ACTIVE_STATUSES = new Set([
+  "active",
   "deployment",
   "received",
   "queued",
@@ -622,6 +629,7 @@ export function mapStatusTone(status: string, presence: AgentPresence = "online"
       return "stale";
     case "deployment":
       return "deployment";
+    case "active":
     case "running":
     case "queued":
     case "received":
@@ -634,6 +642,9 @@ export function mapStatusTone(status: string, presence: AgentPresence = "online"
       return "drafting";
     case "knowledge":
       return "knowledge";
+    case "waiting":
+      return "waiting";
+    case "error":
     case "failed":
       return "failed";
     case "idle":
@@ -668,15 +679,18 @@ export function getActivityLabel(
   presence: AgentPresence = "online",
   locale: Locale = DEFAULT_LOCALE,
 ) {
-  if (presence === "offline" && normalizeStatus(status) !== "failed") {
+  const normalized = normalizeStatus(status);
+  const isFailure = normalized === "failed" || normalized === "error";
+
+  if (presence === "offline" && !isFailure) {
     return activityLabel(locale, "offlinePresence");
   }
 
-  if (presence === "stale" && normalizeStatus(status) !== "failed") {
+  if (presence === "stale" && !isFailure) {
     return activityLabel(locale, "stalePresence");
   }
 
-  return activityLabel(locale, normalizeStatus(status));
+  return activityLabel(locale, normalized);
 }
 
 export function getStatusFallbackTitle(
@@ -748,7 +762,9 @@ export function formatDuration(durationMs?: number) {
 
 export function getEventTone(event: AgentEvent): AgentStatusTone {
   if (event.type === "deployment") return "deployment";
-  if (event.status === "failed" || event.type === "task_failed") return "failed";
+  if (event.status === "failed" || event.status === "error" || event.type === "task_failed")
+    return "failed";
+  if (event.status === "waiting" || event.type === "task_waiting") return "waiting";
   if (event.status === "researching" || event.type === "research_started") return "researching";
   if (event.status === "drafting" || event.type === "draft_started") return "drafting";
   if (event.status === "knowledge" || event.type === "knowledge_update_started") return "knowledge";
@@ -763,8 +779,8 @@ export function getStatusChipLabel(status?: string | null, locale: Locale = DEFA
   return optionalActivityLabel(locale, normalized) ?? humanizeStatus(normalized);
 }
 
-export function getEventTypeLabel(type: string) {
-  return humanizeStatus(type);
+export function getEventTypeLabel(type: string, locale: Locale = DEFAULT_LOCALE) {
+  return optionalEventTypeLabel(locale, type) ?? humanizeStatus(type);
 }
 
 export function formatPresenceLabel(
