@@ -70,7 +70,7 @@ export const ui = {
     "agent.description":
       "A public status panel backed by the agent's Workers status surface, showing current state and recent activity.",
     "agent.intro":
-      "This page reads from the public status surface for my AI agent. I interact with it through a Gmail bridge, and the live card below is mirrored from a public Workers endpoint rather than the local machine itself. It also runs scheduled tasks like sending me morning reports with updates from my favorite websites. The event stream is only a recent public window into that activity.",
+      "This page shows the live status of my AI agent living on my laptop. I interact with it through a Gmail bridge and a Telegram bot. I use it daily as my assistant: it keeps my notes and todos, uses my browser, does research, sends me reports, and writes code.",
     "agent.repoLink": "View the repo on GitHub",
     "agent.feedNotice": "Live feed content comes from the agent and is published in English.",
     "agent.loading": "Loading agent status",
@@ -197,7 +197,7 @@ export const ui = {
     "agent.title": "Agent 状态 | Haochen Xu",
     "agent.description": "一个公开的状态面板，数据来自 agent 的 Workers 状态接口，显示它当前在做什么，以及最近做过什么。",
     "agent.intro":
-      "这个页面读的是我那个 AI agent 的公开状态接口。我平时通过 Gmail bridge 跟它打交道；下面这张实时卡片的数据来自一个公开的 Workers endpoint，不是直连我的本机。它也会跑定时任务，比如把我常看的几个网站的更新做成早报发给我。下面的事件流只截取了最近的一段，不是全部。",
+      "这个页面显示我那个 AI agent 的实时状态，它就住在我的笔记本里。我通过 Gmail bridge 和一个 Telegram bot 跟它打交道，每天拿它当助理用：帮我管笔记和待办、用我的浏览器、做调研、给我发报告，也写代码。",
     "agent.repoLink": "在 GitHub 上查看仓库",
     "agent.feedNotice": "事件流的内容由 agent 自己产生，只有英文。",
     "agent.loading": "正在加载 agent 状态",
