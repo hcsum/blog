@@ -1,9 +1,9 @@
 ---
-title: "我的 Agent 使用心路历程：从 TUI 到把 workspace 当家目录"
-description: "从 NanoClaw 开始，到把 agent-workspace 当作 agent 的家、用 opencode serve 把它从电脑里放出来、用 notes / user.md / todos.md 分层管理记忆，以及自动记忆试过的两个方案和最后留下的那个。"
-titleZh: "我的 Agent 使用心路历程：从 TUI 到把 workspace 当家目录"
-titleEn: "What I've Learned From Using Agents: From TUI to Workspace-as-Home"
-descriptionZh: "从 NanoClaw 开始，到把 agent-workspace 当作 agent 的家、用 opencode serve 把它从电脑里放出来、用 notes / user.md / todos.md 分层管理记忆，以及自动记忆试过的两个方案和最后留下的那个。"
+title: "我自己的 agent 配置：workspace 当家目录、headless runtime，以及记忆最后落在哪"
+description: "从 NanoClaw 说起：把 agent-workspace 当成 agent 的家，用 opencode serve 把它从电脑里放出来，靠 notes / user.md / todos.md 分层管记忆，以及自动记忆试过的两条路和最后留下的那条。"
+titleZh: "我自己的 agent 配置：workspace 当家目录、headless runtime，以及记忆最后落在哪"
+titleEn: "My own agent setup: workspace as home directory, headless runtime, and where I landed on memory"
+descriptionZh: "从 NanoClaw 说起：把 agent-workspace 当成 agent 的家，用 opencode serve 把它从电脑里放出来，靠 notes / user.md / todos.md 分层管记忆，以及自动记忆试过的两条路和最后留下的那条。"
 descriptionEn: "Starting from NanoClaw: making agent-workspace the agent's home, taking it off my machine with opencode serve, layering memory across notes / user.md / todos.md, and the two automatic-memory approaches I tried before settling on one."
 date: 2026-07-30
 tags: ["Agent", "OpenCode", "Claude Code", "Memory", "Workflow"]
@@ -13,8 +13,6 @@ draft: false
 ---
 
 <div data-lang="zh">
-
-# 我的 Agent 使用心路历程：从 TUI 到把 workspace 当家目录
 
 小龙虾火了之后我开始用 agent，但没真正用过小龙虾和 Hermes。第一个上手的是 [NanoClaw](https://github.com/nanocoai/nanoclaw/)，它的特色是代码量少、主要逻辑读得懂，我用起来安心些。后来弃用了，它的多通道和容器化对我没必要，只增加复杂度。
 
@@ -42,13 +40,13 @@ OpenClaw 和 Hermes 也是各自造了一个类似的东西。看明白这一层
 
 ## 二、把 agent 本身变成一个项目
 
-接着我做了后来看最关键的一步：把 `AGENTS.md`、`CLAUDE.md`、`.opencode/`、`.claude/`、skills 全部收进一个固定的文件夹，我叫它 **agent-workspace**。从此我在这个 workspace 里跑 `claude` 或 `opencode`，而不是在某个具体项目里。
+接着是事后看最关键的一步：把 `AGENTS.md`、`CLAUDE.md`、`.opencode/`、`.claude/`、skills 全部收进一个固定的文件夹，我叫它 **agent-workspace**。从此我跑 `claude` 或 `opencode` 都在这个 workspace 里，不在某个具体项目里。
 
 然后我在 workspace 里放了一个 `./notes` 文件夹。每轮对话中有需要的时候，就让它把东西写进去 —— 一次调研的结果、一次讨论的结论。
 
 慢慢地我大部分工作都从这个 workspace 出发。哪怕要开发维护我自己的项目，我也是在这里说一句「去 `../xxx` 把什么什么做了」。
 
-也是从这时起它不再是个写代码的工具。见客户之前，它读完对方的流程文档和 Excel 模板，帮我判断我能在哪一环真正帮上忙；它用 ffmpeg 把一条口播视频剪短，然后自己导出关键帧、看图检查剪得对不对；它翻了我几年的旧聊天记录，捞出值得做成东西的线索。这些都不是「进某个 repo 写代码」，而且如果 agent 的家是一个 repo，这些事一件也做不成。
+也是从这时候起，它不再是个写代码的工具了。见客户之前，它读完对方的流程文档和 Excel 表格，帮我判断我能在哪一环真正帮上忙；它用 ffmpeg 把一条口播视频剪短，还自己导出关键帧、看图检查剪得对不对；它翻了我几年的旧聊天记录，捞出值得做成东西的线索。这些都不是「进某个 repo 写代码」，而且如果 agent 的家是一个 repo，这些事一件也做不成。
 
 工作目录从「项目」挪到了「我」。项目变成了它去访问的对象。
 
@@ -62,12 +60,12 @@ OpenClaw 和 Hermes 也是各自造了一个类似的东西。看明白这一层
 
 ## 四、笔记本
 
-agent 变得随手可及之后，我开始把想法和日程直接倒给它，看到有意思的东西也让它收着。它全部存进 notes。
+agent 变得随手就能用之后，我开始把想法和日程一股脑倒给它，看到有意思的东西也让它顺手收着。它全部存进 notes。
 
 为了让它管好这个笔记本，我定了几条规则和几个 skill。比如我说「记下来 xxx」：
 
 - 内容是给我以后看的 → `notes/brain-dump/`，逐字保存，不做摘要
-- 内容是给 agent 看的跨 session 操作性事实 → `notes/memory/`，一个主题一个文件
+- 内容是给 agent 看的跨 session 操作性事实 → `notes/memory/`
 
 我说「总结一下这篇」，会触发 summarization skill，做一次真正的分析，而不是抽一个干巴巴的骨架提纲。
 
@@ -84,9 +82,9 @@ agent 变得随手可及之后，我开始把想法和日程直接倒给它，�
 - **shortcomings** —— 我自己承认的毛病，例如思维分散不闭环
 - **don't let me** —— 一张反清单，写清楚哪些行为是逃避、不能纵容，例如捣鼓某个样式捣鼓一小时，而不是去推广项目
 
-**`todos.md`** 是唯一的待办面，由 agent 维护。每条带 `[优先级][主题]` 标签和 `added` / `touched` 日期，分 active / backlog / done。我口头说的进展它写进去，我问「昨天哪些没做完」它按日期块回答。
+**`todos.md`** 是我唯一的待办清单，由 agent 维护。每条带 `[优先级][主题]` 标签和 `added` / `touched` 日期，分 active / backlog / done。我口头说的进展它写进去，我问「昨天哪些没做完」它按日期块回答。
 
-有了这两个文件，加上它实时知道我在干嘛，它就能干一件我觉得很不错的事：充当我的导师跟伙伴，在我做的事情不服务于我说过在乎的目标时提醒我。也能给我管理待办 —— 我觉得自己有点 ADHD 倾向，脑子想法很多，经常开新线路，它能帮我抓主线。
+有了这两个文件，加上它实时知道我在干嘛，它就能干一件我觉得很不错的事：充当我的导师跟伙伴，在我做的事情跟我说过在乎的目标对不上时提醒我。也能给我管理待办 —— 我觉得自己有点 ADHD 倾向，脑子想法很多，经常开新线路，它能帮我抓主线。
 
 后来我把这套东西泛化成了一个 Claude Code 插件发出去了：[dont-let-me](https://github.com/hcsum/dont-let-me)。
 
@@ -117,8 +115,6 @@ headless runtime 是关键的一步。知道 `opencode serve` 给的是一个 se
 </div>
 
 <div data-lang="en">
-
-# What I've Learned From Using Agents: From TUI to Workspace-as-Home
 
 I started using agents after OpenClaw blew up, though I never really used OpenClaw or Hermes myself. The first one I actually ran was [NanoClaw](https://github.com/nanocoai/nanoclaw/) — a small codebase with the main logic readable end to end, which made me comfortable. I dropped it later; its multi-channel and containerization work wasn't necessary for me and only added complexity.
 
