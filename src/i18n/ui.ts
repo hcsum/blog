@@ -134,8 +134,8 @@ export const ui = {
   },
 
   zh: {
-    "site.title": "Haochen Xu | 写作、实验，以及前端手艺",
-    "site.description": "Haochen Xu 的个人网站：写软件、记工程笔记，也做前端实验。",
+    "site.title": "Haochen Xu | 写作、实验，以及前端开发",
+    "site.description": "Haochen Xu 的个人网站：记录软件开发、工程笔记与前端实验。",
     "site.name": "Haochen Xu",
 
     "nav.posts": "文章",
@@ -143,17 +143,17 @@ export const ui = {
     "nav.language": "语言",
     "nav.switchTo": "EN",
 
-    "footer.tagline": "写作、实验，以及正在做的事。",
+    "footer.tagline": "写作、实验，以及正在进行的工作。",
 
     "home.title": "Haochen Xu",
     "home.description":
-      "Haochen Xu 的个人网站：全栈软件工程师，写软件、写界面，也在网页上做各种实验。",
+      "Haochen Xu 的个人网站：全栈软件工程师，记录软件开发、界面实现与前端实验。",
     "home.eyebrow": "Hello World",
     "home.heading": "我是 Haochen",
     "home.intro1":
-      "我用 TypeScript 做全栈产品：从产品想法到后端系统、数据模型，再到前端界面，哪一头都动手。",
+      "全栈工程师，主要用 TypeScript 构建 Web 与移动端产品。能够端到端负责产品功能，覆盖产品思考、数据建模、后端系统和前端交互。",
     "home.intro2":
-      "后端的异步架构是我最感兴趣的一块，最近也在折腾 AI agent 和它的记忆系统。界面上我有点偏心，偏爱那种反应活络、信息清楚、不用琢磨就会用的。",
+      "尤其关注后端异步架构，近期也在探索 AI Agent 和 Agent 记忆系统。前端方面，偏爱有活力、表达清晰且易于使用的界面。",
     "home.cta": "去看文章",
     "home.experience": "履历",
     "home.recentEyebrow": "最近写的",
@@ -164,9 +164,9 @@ export const ui = {
     "posts.title": "文章 | Haochen Xu",
     "posts.description": "随笔、开发笔记、数据结构，以及各种实验。",
     "posts.eyebrow": "归档",
-    "posts.heading": "关于软件、前端手艺，以及我想弄明白的那些事。",
+    "posts.heading": "关于软件、前端开发，以及我想弄明白的那些问题。",
     "posts.intro":
-      "这里放我的笔记、实验和长文。有的出自工作，有的出自 side project，还有的是一个话题一路钻下去，钻到它终于说得通为止。",
+      "这里放我的笔记、实验和长文。有的来自工作，有的来自 side project，也有的是把一个话题一直深入下去，直到它讲得通为止。",
     "posts.count": "篇",
     "posts.back": "返回文章列表",
     "posts.readingTime": "分钟读完",
@@ -183,7 +183,7 @@ export const ui = {
 
     "lab.pretext.title": "有重力的待办清单",
     "lab.pretext.description":
-      "一个 @chenglou/pretext 的小实验：每条待办都当成真正的多行文本来量，所以勾掉一条时，它会散成一个个字母掉下去，堆在底下。撤销会把它们捡回原位。",
+      "一个 @chenglou/pretext 的小实验：每条待办都按真实的多行文本来测量，所以勾掉一条时，它会散成一个个字母掉下去，堆在底下。撤销会把它们捡回原位。",
 
     "lab.demo.gravityTodo": "重力待办",
     "lab.demo.undo": "撤销",
@@ -197,7 +197,7 @@ export const ui = {
     "agent.title": "Agent 状态 | Haochen Xu",
     "agent.description": "一个公开的状态面板，数据来自 agent 的 Workers 状态接口，显示它当前在做什么，以及最近做过什么。",
     "agent.intro":
-      "这个页面显示我那个 AI agent 的实时状态，它就住在我的笔记本里。我通过 Gmail bridge 和一个 Telegram bot 跟它打交道，每天拿它当助理用：帮我管笔记和待办、用我的浏览器、做调研、给我发报告，也写代码。",
+      "这个页面显示我的 AI agent 的实时状态，它运行在我的笔记本上。我通过 Gmail bridge 和一个 Telegram bot 与它交互，日常当助理用：管理笔记和待办、操作我的浏览器、做调研、发送报告，也写代码。",
     "agent.repoLink": "在 GitHub 上查看仓库",
     "agent.feedNotice": "事件流的内容由 agent 自己产生，只有英文。",
     "agent.loading": "正在加载 agent 状态",
@@ -211,11 +211,11 @@ export const ui = {
     "agent.chip.status": "Agent 状态",
     "agent.chip.lastKnown": "最后已知状态",
     "agent.unavailable.title": "Agent 不可用",
-    "agent.unavailable.summary": "取不到当前的状态快照。等公开状态接口恢复了再看看。",
+    "agent.unavailable.summary": "取不到当前的状态快照。等公开状态接口恢复后再试。",
 
     "agent.timeline.heading": "近期活动",
     "agent.timeline.eyebrow": "事件流",
-    "agent.timeline.empty": "暂时还没有活动。有新的公开事件进来，这条时间线会自己长出来。",
+    "agent.timeline.empty": "暂时还没有活动。新的公开事件到达后会补进这条时间线。",
     "agent.timeline.stale": "心跳延迟了。这条时间线只截取最近一段，可能已经跟不上机器上的实际情况。",
     "agent.timeline.offline": "本地 agent 已离线。这条时间线仍然只是最近一段，不是完整历史。",
     "agent.timeline.fetching": "正在重新拉取近期活动，先显示上一次缓存下来的内容。",
@@ -252,7 +252,7 @@ export const ui = {
     "agent.header.feed": "公开状态源",
 
     "rss.title": "Haochen Xu",
-    "rss.description": "关于 Web 工程、前端实验，以及任何值得钻进去弄明白的东西。",
+    "rss.description": "关于 Web 工程、前端实验，以及其他值得深入理解的话题。",
   },
 } as const;
 
